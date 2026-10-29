@@ -4,7 +4,16 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import type { Body } from "@/data/bodies";
 import { Icon } from "@/components/ui/Icon";
-import { getArSupport, openQuickLook, preloadArSession, startWebXR, subscribeArSupport, type ArSupport } from "./ar";
+import {
+  AR_PAUSE_EVENT,
+  AR_RESUME_EVENT,
+  getArSupport,
+  openQuickLook,
+  preloadArSession,
+  startWebXR,
+  subscribeArSupport,
+  type ArSupport,
+} from "./ar";
 
 /** Texto claro (y el nombre técnico del error) cuando la realidad aumentada no se pudo abrir. */
 function describeError(e: unknown): string {
@@ -45,13 +54,19 @@ export function ArButton({ body }: { body: Body }) {
         await openQuickLook(body);
         setState("idle");
       } else if (overlayRef.current) {
+        // Libera el contexto WebGL del visor 3D (muchos teléfonos admiten muy pocos a la vez).
+        window.dispatchEvent(new Event(AR_PAUSE_EVENT));
+        await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+        await new Promise((r) => setTimeout(r, 250));
         stopRef.current = await startWebXR(body, overlayRef.current, () => {
           stopRef.current = null;
+          window.dispatchEvent(new Event(AR_RESUME_EVENT));
           setState("idle");
         });
         setState("active");
       }
     } catch (e) {
+      window.dispatchEvent(new Event(AR_RESUME_EVENT));
       console.warn("[AR]", e);
       setErrorText(describeError(e));
       setState("error");

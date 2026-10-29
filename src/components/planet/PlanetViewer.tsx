@@ -11,6 +11,7 @@ import { detectQuality, detectWebGL } from "./quality";
 import type { EarthNow } from "./PlanetCanvas";
 import type { TextureStatus } from "./useTextures";
 import { ArButton } from "./ArButton";
+import { AR_PAUSE_EVENT, AR_RESUME_EVENT } from "./ar";
 
 const PlanetCanvas = dynamic(() => import("./PlanetCanvas"), {
   ssr: false,
@@ -69,6 +70,18 @@ export function PlanetViewer({ body }: { body: Body }) {
   const [focusSeq, setFocusSeq] = useState(0);
   const [nudge, setNudge] = useState({ seq: 0, azimuth: 0, polar: 0 });
   const [texStatus, setTexStatus] = useState<TextureStatus>("cargando");
+  // Mientras dura la realidad aumentada se libera el contexto WebGL de este visor.
+  const [arPaused, setArPaused] = useState(false);
+  useEffect(() => {
+    const pause = () => setArPaused(true);
+    const resume = () => setArPaused(false);
+    window.addEventListener(AR_PAUSE_EVENT, pause);
+    window.addEventListener(AR_RESUME_EVENT, resume);
+    return () => {
+      window.removeEventListener(AR_PAUSE_EVENT, pause);
+      window.removeEventListener(AR_RESUME_EVENT, resume);
+    };
+  }, []);
   const [earthNow, setEarthNow] = useState<EarthNow | null>(null);
 
   const kind = body.render.special.kind;
@@ -158,7 +171,9 @@ export function PlanetViewer({ body }: { body: Body }) {
         aria-label={`Modelo 3D de ${body.nameInSentence}. Arrastra para girarlo o usa las flechas del teclado; más y menos para acercar.`}
         onKeyDown={onStageKey}
       >
-        {webgl === null ? (
+        {arPaused ? (
+          <StageStatus>Realidad aumentada en curso…</StageStatus>
+        ) : webgl === null ? (
           <StageStatus>Preparando el modelo 3D…</StageStatus>
         ) : webgl === "ninguno" ? (
           <FlatFallback body={body} />

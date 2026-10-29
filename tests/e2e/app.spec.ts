@@ -269,7 +269,7 @@ test.describe("realidad aumentada (WebXR simulado)", () => {
       isSessionSupported: async (m) => m === "immersive-ar",
       requestSession: async (m, init) => {
         const root = init && init.domOverlay && init.domOverlay.root;
-        window.__xrCalls.push({ m, features: init && init.optionalFeatures, display: root ? getComputedStyle(root).display : null, attached: !!(root && root.isConnected) });
+        window.__xrCalls.push({ m, features: init && init.optionalFeatures, display: root ? getComputedStyle(root).display : null, attached: !!(root && root.isConnected), canvases: document.querySelectorAll("canvas").length });
         ${mode === "rechaza" ? 'throw Object.assign(new Error("sin ARCore"), { name: "NotSupportedError" });' : 'throw Object.assign(new Error("fin de prueba"), { name: "InvalidStateError" });'}
       },
     } });`;
@@ -285,11 +285,15 @@ test.describe("realidad aumentada (WebXR simulado)", () => {
     });
     const calls = await page.evaluate(() => (window as unknown as { __xrCalls: unknown[] }).__xrCalls);
     expect(calls).toHaveLength(1);
-    const c = calls[0] as { m: string; features: string[]; display: string; attached: boolean };
+    const c = calls[0] as { m: string; features: string[]; display: string; attached: boolean; canvases: number };
     expect(c.m).toBe("immersive-ar");
     expect(c.attached).toBe(true);
     expect(c.display, "el contenedor de la superposición no debe estar oculto").not.toBe("none");
     expect(c.features).toContain("dom-overlay");
+    // El visor 3D libera su contexto WebGL antes de pedir la sesión (un segundo contexto fallaba en teléfonos).
+    expect(c.canvases, "lienzos WebGL abiertos al pedir la sesión").toBe(0);
+    // Y vuelve al terminar o fallar.
+    await expect(page.locator("canvas")).toHaveCount(1, { timeout: 15_000 });
   });
 
   test("si el teléfono no admite la sesión, explica qué falta", async ({ page }) => {

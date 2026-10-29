@@ -78,3 +78,11 @@ export async function startWebXR(body: Body, overlay: HTMLElement, onEnd?: () =>
 export function preloadArSession(): void {
   void import("./arSession");
 }
+
+/**
+ * Eventos para liberar el contexto WebGL del visor 3D mientras dura la realidad aumentada:
+ * muchos teléfonos solo admiten unos pocos contextos y un segundo contexto fallaba con
+ * «Error creating WebGL context».
+ */
+export const AR_PAUSE_EVENT = "solar:ar-pause";
+export const AR_RESUME_EVENT = "solar:ar-resume";

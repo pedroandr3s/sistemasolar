@@ -85,6 +85,24 @@ export async function openQuickLook(body: Body): Promise<void> {
  * three.js) y se puede volver a colocar con el botón «Recolocar». Mientras dura la sesión se
  * muestra un texto de ayuda (hacia dónde está el planeta) y una línea de diagnóstico.
  */
+/** Crea el renderer; si el teléfono no da el contexto pedido, prueba con opciones más ligeras. */
+function createRenderer(): THREE.WebGLRenderer {
+  const attempts: THREE.WebGLRendererParameters[] = [
+    { antialias: true, alpha: true },
+    { antialias: false, alpha: true },
+    { antialias: false, alpha: true, powerPreference: "low-power", precision: "mediump" },
+  ];
+  let lastError: unknown = null;
+  for (const opts of attempts) {
+    try {
+      return new THREE.WebGLRenderer(opts);
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError ?? new Error("No se pudo crear el contexto WebGL");
+}
+
 export async function startWebXR(body: Body, overlay: HTMLElement, onEnd?: () => void): Promise<() => void> {
   const sys = xr();
   if (!sys) throw new Error("WebXR no disponible");
@@ -94,7 +112,7 @@ export async function startWebXR(body: Body, overlay: HTMLElement, onEnd?: () =>
     domOverlay: { root: overlay },
   });
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  const renderer = createRenderer();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.xr.enabled = true;
   // «local»: el origen es donde estaba el teléfono al empezar (siempre disponible en AR).
