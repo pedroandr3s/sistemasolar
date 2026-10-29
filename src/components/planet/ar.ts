@@ -69,7 +69,12 @@ export async function openQuickLook(body: Body): Promise<void> {
 }
 
 /** WebXR (Android): coloca el cuerpo a 1 m delante del teléfono. */
-export async function startWebXR(body: Body, overlay: HTMLElement): Promise<() => void> {
+export async function startWebXR(body: Body, overlay: HTMLElement, onEnd?: () => void): Promise<() => void> {
   const session = await import("./arSession");
-  return session.startWebXR(body, overlay);
+  return session.startWebXR(body, overlay, onEnd);
+}
+
+/** Descarga por adelantado la parte 3D, para que pedir la sesión ocurra dentro del toque del usuario. */
+export function preloadArSession(): void {
+  void import("./arSession");
 }

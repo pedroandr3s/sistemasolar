@@ -227,7 +227,10 @@ test.describe("diagnóstico y QR de prueba", () => {
     const qr = page.locator('[aria-label^="Código QR de"] svg');
     await expect(qr).toHaveCount(1, { timeout: 15_000 });
     for (const s of STATIONS) {
-      await page.getByRole("button", { name: new RegExp(s.name) }).first().click();
+      await page
+        .getByRole("button", { name: new RegExp(s.name) })
+        .first()
+        .click();
       await expect(page.getByRole("img", { name: `Código QR de ${s.name}` })).toBeVisible();
       await expect(page.getByText(new RegExp(`/estacion/${s.id}$`))).toBeVisible();
     }
@@ -255,6 +258,45 @@ test.describe("diagnóstico y QR de prueba", () => {
     await input.setInputFiles({ name: "marte.png", mimeType: "image/png", buffer: marte });
     await expect(page).toHaveURL(/\/estacion\/marte$/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Marte");
+  });
+});
+
+test.describe("realidad aumentada (WebXR simulado)", () => {
+  // Chromium sin ventana no tiene ARCore: se simula navigator.xr para comprobar el flujo de la página.
+  const fakeXr = (mode: "rechaza" | "acepta") => `
+    window.__xrCalls = [];
+    Object.defineProperty(navigator, "xr", { configurable: true, value: {
+      isSessionSupported: async (m) => m === "immersive-ar",
+      requestSession: async (m, init) => {
+        const root = init && init.domOverlay && init.domOverlay.root;
+        window.__xrCalls.push({ m, features: init && init.optionalFeatures, display: root ? getComputedStyle(root).display : null, attached: !!(root && root.isConnected) });
+        ${mode === "rechaza" ? 'throw Object.assign(new Error("sin ARCore"), { name: "NotSupportedError" });' : 'throw Object.assign(new Error("fin de prueba"), { name: "InvalidStateError" });'}
+      },
+    } });`;
+
+  test("el botón aparece y pide la sesión con el contenedor visible (no display:none)", async ({ page }) => {
+    await page.addInitScript(fakeXr("acepta"));
+    await page.goto("/estacion/saturno");
+    const btn = page.getByRole("button", { name: "Ver en realidad aumentada" });
+    await expect(btn).toBeVisible({ timeout: 15_000 });
+    await btn.click();
+    await expect(page.locator(".ar-note[role=alert]")).toContainText(/sesión de realidad aumentada abierta/i, {
+      timeout: 15_000,
+    });
+    const calls = await page.evaluate(() => (window as unknown as { __xrCalls: unknown[] }).__xrCalls);
+    expect(calls).toHaveLength(1);
+    const c = calls[0] as { m: string; features: string[]; display: string; attached: boolean };
+    expect(c.m).toBe("immersive-ar");
+    expect(c.attached).toBe(true);
+    expect(c.display, "el contenedor de la superposición no debe estar oculto").not.toBe("none");
+    expect(c.features).toContain("dom-overlay");
+  });
+
+  test("si el teléfono no admite la sesión, explica qué falta", async ({ page }) => {
+    await page.addInitScript(fakeXr("rechaza"));
+    await page.goto("/estacion/marte");
+    await page.getByRole("button", { name: "Ver en realidad aumentada" }).click({ timeout: 15_000 });
+    await expect(page.locator(".ar-note[role=alert]")).toContainText(/ARCore/, { timeout: 15_000 });
   });
 });
 

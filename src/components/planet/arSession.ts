@@ -68,7 +68,6 @@ export async function openQuickLook(body: Body): Promise<void> {
   const a = document.createElement("a");
   a.rel = "ar";
   a.href = url;
-  a.download = `${body.id}.usdz`;
   a.appendChild(document.createElement("img"));
   document.body.appendChild(a);
   a.click();
@@ -78,49 +77,43 @@ export async function openQuickLook(body: Body): Promise<void> {
   }, 60_000);
 }
 
-/** WebXR (Android): coloca el cuerpo a 1 m delante del teléfono. */
-export async function startWebXR(body: Body, overlay: HTMLElement): Promise<() => void> {
+/**
+ * WebXR (Android): coloca el cuerpo a 1 m delante del teléfono.
+ * `onEnd` avisa cuando la sesión termina por cualquier motivo (botón, gesto «atrás», el sistema).
+ */
+export async function startWebXR(body: Body, overlay: HTMLElement, onEnd?: () => void): Promise<() => void> {
   const sys = xr();
   if (!sys) throw new Error("WebXR no disponible");
+  // Debe pedirse dentro del toque del usuario: antes de cualquier trabajo largo.
   const session = await sys.requestSession("immersive-ar", {
-    optionalFeatures: ["dom-overlay", "local-floor"],
+    optionalFeatures: ["dom-overlay"],
     domOverlay: { root: overlay },
   });
+
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.xr.enabled = true;
+  // «local»: el origen es donde estaba el teléfono al empezar (siempre disponible en AR, a diferencia de «local-floor»).
+  renderer.xr.setReferenceSpaceType("local");
   renderer.domElement.style.display = "none";
   document.body.appendChild(renderer.domElement);
-  await renderer.xr.setSession(session as XRSessionLike as unknown as XRSession);
 
   const scene = new THREE.Scene();
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
   const sun = new THREE.DirectionalLight(0xffffff, 2.2);
   sun.position.set(-1, 0.5, 1);
   scene.add(sun);
   const camera = new THREE.PerspectiveCamera();
-  const model = await buildModel(body, 0.18);
-  model.position.set(0, 0, -1);
-  scene.add(model);
 
+  let model: THREE.Group | null = null;
   let placed = false;
+  let frames = 0;
   let last = performance.now();
-  renderer.setAnimationLoop(() => {
-    const now = performance.now();
-    const dt = (now - last) / 1000;
-    last = now;
-    if (!placed) {
-      const cam = renderer.xr.getCamera();
-      const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
-      model.position.copy(cam.position).add(dir.multiplyScalar(1));
-      placed = true;
-    }
-    model.children[0]!.rotation.y += dt * 0.3;
-    renderer.render(scene, camera);
-  });
+  let ended = false;
 
   const cleanup = () => {
+    if (ended) return;
+    ended = true;
     renderer.setAnimationLoop(null);
     scene.traverse((o) => {
       const m = o as THREE.Mesh;
@@ -133,8 +126,44 @@ export async function startWebXR(body: Body, overlay: HTMLElement): Promise<() =
     });
     renderer.dispose();
     renderer.domElement.remove();
+    onEnd?.();
   };
   session.addEventListener("end", cleanup, { once: true });
+
+  try {
+    await renderer.xr.setSession(session as XRSessionLike as unknown as XRSession);
+  } catch (e) {
+    session.end().catch(() => undefined);
+    cleanup();
+    throw e;
+  }
+
+  // Empieza a dibujar de inmediato (la cámara se ve mientras se cargan las texturas).
+  renderer.setAnimationLoop(() => {
+    const now = performance.now();
+    const dt = (now - last) / 1000;
+    last = now;
+    frames++;
+    // Se coloca a 1 m frente a la mirada, cuando ya hay una pose estable del teléfono.
+    if (model && !placed && frames > 3) {
+      const cam = renderer.xr.getCamera();
+      const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
+      model.position.copy(cam.position).add(dir.multiplyScalar(1));
+      placed = true;
+    }
+    if (model && placed) model.children[0]!.rotation.y += dt * 0.3;
+    renderer.render(scene, camera);
+  });
+
+  buildModel(body, 0.18)
+    .then((m) => {
+      if (ended) return;
+      m.position.set(0, 0, -1);
+      model = m;
+      scene.add(m);
+    })
+    .catch((e) => console.warn("[AR] modelo", e));
+
   return () => {
     session.end().catch(() => cleanup());
   };

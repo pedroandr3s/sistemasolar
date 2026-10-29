@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { getArSupport, subscribeArSupport, type ArSupport } from "@/components/planet/ar";
 import { getConfiguredSiteUrl, stationUrl, validateSiteUrl } from "@/config/site";
 import { BODIES, BODY_ORDER } from "@/data/bodies";
 import { heliocentricEcliptic, length } from "@/lib/astro";
@@ -93,6 +94,8 @@ export function Diagnostics() {
   const progress = useProgress();
   const geo = useGeolocation();
   const compass = useCompass();
+  const arSupport = useSyncExternalStore<ArSupport | undefined>(subscribeArSupport, getArSupport, () => undefined);
+  const hasXr = useClientValue(() => "xr" in navigator, false);
 
   const [geoPermission, setGeoPermission] = useState<string>("desconocido");
   const [tile, setTile] = useState<"sin-probar" | "probando" | "ok" | "error">("sin-probar");
@@ -201,6 +204,28 @@ export function Diagnostics() {
         level={secure ? "ok" : "aviso"}
         value={secure ? "Sí" : "No"}
         detail={secure ? undefined : "GPS y brújula requieren https. Usa el método B (túnel) de la guía de pruebas."}
+      />
+      <Row
+        label="Realidad aumentada"
+        level={arSupport ? "ok" : arSupport === null ? "aviso" : "info"}
+        value={
+          arSupport === "webxr"
+            ? "Disponible (WebXR, Android)."
+            : arSupport === "quicklook"
+              ? "Disponible (AR Quick Look, iPhone/iPad)."
+              : arSupport === null
+                ? "No disponible en este dispositivo."
+                : "Comprobando…"
+        }
+        detail={
+          arSupport === null
+            ? !secure
+              ? "Necesita https."
+              : !hasXr
+                ? "Este navegador no ofrece WebXR. En Android usa Chrome actualizado."
+                : "El navegador ofrece WebXR pero no admite sesiones de realidad aumentada: en Android falta «Google Play Services para RA» (ARCore) o el teléfono no es compatible."
+            : undefined
+        }
       />
       <Row
         label="GPS"
