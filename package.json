@@ -1,0 +1,61 @@
+{
+  "name": "sistema-solar",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:red": "next dev --hostname 0.0.0.0",
+    "dev:https": "next dev --hostname 0.0.0.0 --experimental-https",
+    "build": "next build",
+    "start": "next start",
+    "start:red": "next start --hostname 0.0.0.0",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "qr:dev": "tsx scripts/qr/generate.ts --modo desarrollo",
+    "qr:prod": "tsx scripts/qr/generate.ts --modo produccion",
+    "tunel": "tsx scripts/tunnel/tunnel.ts",
+    "verify": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "textures": "python3 scripts/textures/build_textures.py",
+    "route:fetch": "node scripts/route/fetch-route.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
+    "astronomy-engine": "^2.1.19",
+    "jsqr": "^1.4.0",
+    "leaflet": "^1.9.4",
+    "magvar": "2.2.0",
+    "next": "16.4.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-leaflet": "^5.0.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.56.0",
+    "@tailwindcss/turbopack": "^4",
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^20",
+    "@types/pngjs": "^6.0.5",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.186.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.2",
+    "pdf-lib": "^1.17.1",
+    "pngjs": "^7.0.0",
+    "prettier": "^3.9.10",
+    "qrcode": "^1.5.4",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^4.1.12"
+  },
+  "engines": {
+    "node": ">=20.9"
+  }
+}

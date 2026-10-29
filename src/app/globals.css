@@ -1,0 +1,1437 @@
+@import "tailwindcss";
+
+/*
+ * Sistema de diseño «Noche andina».
+ * Fondo: el azul profundo del cielo nocturno de Ñuble (no un negro neutro).
+ * Acento solar ámbar para acciones principales; verde álamo para estados
+ * verificados y progreso; coral para errores.
+ * Tipografía: Barlow, inspirada en la señalética vial: el recorrido es una ruta.
+ */
+
+@theme {
+  --color-night: #0f1830;
+  --color-night-2: #16213f;
+  --color-night-3: #22305a;
+  --color-snow: #eef2f7;
+  --color-mist: #a7b2c9;
+  --color-dim: #8590ab;
+  --color-sol: #f4b860;
+  --color-alamo: #9cc9a1;
+  --color-coral: #f2907a;
+  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-display: var(--font-barlow-condensed), var(--font-barlow), system-ui, sans-serif;
+}
+
+:root {
+  --line: rgb(167 178 201 / 0.16);
+  --line-strong: rgb(167 178 201 / 0.32);
+  --nav-h: 64px;
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  background: var(--color-night);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: radial-gradient(120% 60% at 50% -10%, #1b2a52 0%, var(--color-night) 55%) fixed;
+  color: var(--color-snow);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.5;
+  font-feature-settings: "kern", "liga";
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-sol);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+a {
+  color: inherit;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  background: var(--color-sol);
+  color: #1d1406;
+  padding: 10px 14px;
+  border-radius: var(--radius-s);
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+  padding-inline: 18px;
+}
+
+.wrap-wide {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 18px;
+}
+
+.prose-block p + p {
+  margin-top: 0.85em;
+}
+
+.lead {
+  font-size: 1.18rem;
+  line-height: 1.45;
+  color: var(--color-snow);
+}
+
+.muted {
+  color: var(--color-mist);
+}
+
+.small {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* ---------------------------------------------------------------- botones */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--color-snow);
+  font: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+.btn:hover {
+  background: rgb(238 242 247 / 0.06);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn--primary {
+  background: var(--color-sol);
+  border-color: var(--color-sol);
+  color: #1d1406;
+}
+.btn--primary:hover {
+  background: #f8c97f;
+}
+.btn--small {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.94rem;
+}
+.btn--block {
+  width: 100%;
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: rgb(15 24 48 / 0.72);
+  color: var(--color-snow);
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+.icon-btn:hover {
+  background: rgb(34 48 90 / 0.9);
+}
+.icon-btn[aria-pressed="true"] {
+  border-color: var(--color-sol);
+  color: var(--color-sol);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: rgb(15 24 48 / 0.78);
+  color: var(--color-snow);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+.chip[aria-pressed="true"] {
+  background: var(--color-snow);
+  border-color: var(--color-snow);
+  color: var(--color-night);
+}
+
+.text-link {
+  color: var(--color-snow);
+  text-decoration: underline;
+  text-decoration-color: rgb(244 184 96 / 0.6);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  /* En un elemento en línea, el relleno vertical amplía el área táctil sin mover el texto. */
+  padding-block: 6px;
+}
+.text-link:hover {
+  text-decoration-color: var(--color-sol);
+}
+/* Enlace de texto que va solo (no dentro de una frase): área táctil de al menos 44 px. */
+.text-link--block {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-block: 0;
+}
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+  margin-top: 4px;
+}
+
+/* ---------------------------------------------------------------- avisos */
+
+.notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--radius-s);
+  background: rgb(244 184 96 / 0.1);
+  border-left: 3px solid var(--color-sol);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.notice--error {
+  background: rgb(242 144 122 / 0.1);
+  border-left-color: var(--color-coral);
+}
+.notice--ok {
+  background: rgb(156 201 161 / 0.1);
+  border-left-color: var(--color-alamo);
+}
+.notice--info {
+  background: rgb(167 178 201 / 0.08);
+  border-left-color: var(--color-mist);
+}
+.notice--alert {
+  background: rgb(242 144 122 / 0.16);
+  border: 1px solid rgb(242 144 122 / 0.5);
+  border-left-width: 4px;
+  border-left-color: var(--color-coral);
+}
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-mist);
+}
+.badge-status::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--color-mist);
+}
+.badge-status--ok {
+  color: var(--color-alamo);
+}
+.badge-status--ok::before {
+  border: none;
+  background: var(--color-alamo);
+}
+
+/* ------------------------------------------------------------- navegación */
+
+.mode-nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: rgb(15 24 48 / 0.94);
+  border-top: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+.mode-nav ul {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: var(--nav-h);
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+.mode-nav a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 100%;
+  color: var(--color-mist);
+  text-decoration: none;
+  font-size: 0.74rem;
+  font-weight: 500;
+  line-height: 1.1;
+  text-align: center;
+}
+.mode-nav a[aria-current="page"] {
+  color: var(--color-snow);
+}
+.mode-nav a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28%;
+  right: 28%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--color-sol);
+}
+
+.with-nav {
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 24px);
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 18px;
+  font-size: 0.86rem;
+  color: var(--color-mist);
+}
+.top-bar a {
+  text-decoration: none;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--color-snow);
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------------- regla de ruta */
+
+.ruler {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.ruler-wrap {
+  padding: 0 18px;
+}
+
+/* Regla del recorrido (RouteRuler) */
+.rr-ruler {
+  position: relative;
+  padding: 22px 0 0;
+  font-size: 0.78rem;
+  color: var(--color-mist);
+}
+
+.rr-track {
+  position: relative;
+  height: 14px;
+}
+
+.rr-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  height: 2px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(90deg, rgb(238 242 247 / 0.55) 0 10px, rgb(238 242 247 / 0) 10px 16px);
+}
+
+.rr-belt {
+  position: absolute;
+  top: 3px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgb(167 178 201 / 0.22);
+}
+
+.rr-tick {
+  position: absolute;
+  top: 12px;
+  width: 1px;
+  height: 6px;
+  background: rgb(167 178 201 / 0.5);
+}
+.rr-tick span {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rr-dot {
+  position: absolute;
+  top: 3px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--color-night);
+}
+
+.rr-current {
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  box-shadow:
+    0 0 0 2px var(--color-night),
+    0 0 0 3.5px var(--color-snow);
+  z-index: 2;
+}
+
+.rr-currentLabel {
+  position: absolute;
+  bottom: 18px;
+  white-space: nowrap;
+  color: var(--color-snow);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rr-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+/* Camino a escala (RouteRoad) */
+.road-road {
+  position: relative;
+  margin: 8px 0 0;
+}
+
+.road-svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.road-line {
+  stroke: rgb(238 242 247 / 0.5);
+  stroke-width: 2;
+  stroke-dasharray: 10 7;
+}
+
+.road-belt {
+  fill: rgb(167 178 201 / 0.2);
+}
+
+.road-tick {
+  stroke: rgb(167 178 201 / 0.45);
+  stroke-width: 1.5;
+}
+
+.road-leader {
+  fill: none;
+  stroke: rgb(167 178 201 / 0.35);
+  stroke-width: 1;
+}
+
+.road-dot {
+  stroke: var(--color-night);
+  stroke-width: 2;
+}
+
+.road-town,
+.road-townEnd {
+  position: absolute;
+  left: 0;
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-mist);
+  font-size: 0.92rem;
+}
+
+.road-townEnd {
+  position: static;
+}
+
+.road-beltLabel {
+  position: absolute;
+  left: 64px;
+  right: 0;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  color: var(--color-dim);
+  max-width: 22rem;
+}
+
+.road-item {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  min-height: 44px;
+  text-decoration: none;
+}
+.road-text {
+  display: grid;
+  gap: 1px;
+}
+
+.road-item:hover .road-name {
+  color: var(--color-sol);
+}
+
+.road-name {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.road-km {
+  font-size: 0.86rem;
+  color: var(--color-mist);
+}
+
+.road-end {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.road-andes {
+  display: block;
+  width: 100%;
+  height: 70px;
+  margin-top: 10px;
+  fill: #26355f;
+}
+
+.road-snow {
+  fill: rgb(238 242 247 / 0.75);
+}
+
+/* ----------------------------------------------------------- estación */
+
+.stage {
+  position: relative;
+  height: 50svh;
+  min-height: 290px;
+  max-height: 560px;
+}
+/* Vista orbital: más alta en el teléfono para distinguir los planetas interiores. */
+.stage--orbits {
+  height: 64svh;
+  min-height: 340px;
+  max-height: 680px;
+}
+.stage--expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  height: 100svh;
+  max-height: none;
+  background: var(--color-night);
+}
+.stage canvas {
+  touch-action: none;
+}
+.stage__overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  pointer-events: none;
+}
+.stage__overlay > * {
+  pointer-events: auto;
+}
+.stage__chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.stage__chips::-webkit-scrollbar {
+  display: none;
+}
+.stage__zoom {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stage__status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--color-mist);
+  pointer-events: none;
+}
+.stage__note {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  max-width: 70%;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: var(--color-mist);
+  background: rgb(15 24 48 / 0.7);
+  padding: 6px 10px;
+  border-radius: var(--radius-s);
+}
+
+.planet-label {
+  transform: translate(-50%, -100%);
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgb(15 24 48 / 0.86);
+  border: 1px solid var(--line-strong);
+  color: var(--color-snow);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.planet-label::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 1px;
+  height: 7px;
+  background: var(--line-strong);
+}
+/* Etiqueta colocada debajo de su punto (cuando arriba no cabe): la línea guía sale hacia arriba. */
+.planet-label[data-side="below"]::after {
+  top: -7px;
+  bottom: auto;
+}
+
+.planet-name {
+  font-size: clamp(3.4rem, 17vw, 6.5rem);
+  margin: 0;
+}
+
+.kind-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  color: var(--color-mist);
+}
+.kind-line .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.section {
+  margin-top: 36px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.7rem;
+  line-height: 1.05;
+  margin: 0 0 12px;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 28px 0;
+}
+
+/* Tarjeta de la estación siguiente: una «señal de ruta». */
+.next-sign {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: var(--radius-m);
+  background: var(--color-night-2);
+  border: 1px solid var(--line);
+  text-decoration: none;
+}
+.next-sign__km {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Segmentado de niveles */
+.levels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--color-night-2);
+  border: 1px solid var(--line);
+}
+.levels button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-mist);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.levels button[aria-selected="true"],
+.levels button[aria-checked="true"] {
+  background: var(--color-snow);
+  color: var(--color-night);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 0;
+}
+.facts > div {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, 40%) 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.facts dt {
+  color: var(--color-mist);
+  font-size: 0.92rem;
+}
+.facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.facts dd small {
+  display: block;
+  color: var(--color-mist);
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
+
+.idea {
+  padding: 16px 18px;
+  border-radius: var(--radius-m);
+  background: linear-gradient(135deg, rgb(244 184 96 / 0.14), rgb(244 184 96 / 0.03));
+  border: 1px solid rgb(244 184 96 / 0.28);
+}
+
+/* Experiencia final (Urano): el viaje de la luz */
+.final-journey {
+  display: grid;
+  gap: 4px;
+}
+.final-journey__track {
+  position: relative;
+  height: 64px;
+  margin: 14px 14px 0 10px;
+}
+.final-journey__rail,
+.final-journey__light {
+  position: absolute;
+  left: 0;
+  top: 30px;
+  height: 4px;
+  border-radius: 2px;
+}
+.final-journey__rail {
+  right: 0;
+  background: var(--color-night-3);
+}
+.final-journey__light {
+  background: linear-gradient(90deg, rgb(244 184 96 / 0.35), var(--color-sol));
+  box-shadow: 0 0 10px rgb(244 184 96 / 0.6);
+}
+.final-journey__sun {
+  position: absolute;
+  left: -9px;
+  top: 23px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-sol);
+}
+.final-journey__stop {
+  position: absolute;
+  top: 27px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: var(--color-night);
+  border: 2px solid var(--stop-color);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+/* Halo en vez de transform: scale, que también agrandaría el rótulo del planeta. */
+.final-journey__stop.is-reached {
+  background: var(--stop-color);
+  box-shadow: 0 0 0 3px rgb(238 242 247 / 0.18), 0 0 10px var(--stop-color);
+}
+.final-journey__label {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: var(--color-mist);
+}
+.final-journey__stop:last-child .final-journey__label {
+  left: auto;
+  right: -6px;
+  transform: none;
+}
+.final-journey__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 4px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.final-journey__list li {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-dim);
+}
+.final-journey__list li.is-reached {
+  color: var(--color-snow);
+}
+.final-journey__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+/* Preguntas */
+.qa {
+  border-top: 1px solid var(--line);
+}
+.qa summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 0;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.qa summary::-webkit-details-marker {
+  display: none;
+}
+.qa summary::after {
+  content: "+";
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--color-sol);
+}
+.qa[open] summary::after {
+  content: "−";
+}
+.qa > div {
+  padding: 0 0 16px;
+}
+
+/* Quiz */
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--color-snow);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.quiz-option[data-state="correct"] {
+  border-color: var(--color-alamo);
+  background: rgb(156 201 161 / 0.12);
+}
+.quiz-option[data-state="wrong"] {
+  border-color: var(--color-coral);
+  background: rgb(242 144 122 / 0.1);
+}
+
+/* Paneles genéricos */
+.panel {
+  padding: 16px;
+  border-radius: var(--radius-m);
+  background: var(--color-night-2);
+  border: 1px solid var(--line);
+}
+
+select,
+input[type="datetime-local"],
+input[type="range"] {
+  font: inherit;
+  color: var(--color-snow);
+}
+.field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.9rem;
+  color: var(--color-mist);
+}
+/* width + min-width: 0 evitan que un <select> con opciones largas o el selector de
+   fecha ensanchen la página en teléfonos de 320 px (la barra de modos quedaría fuera). */
+.field select,
+.field input[type="datetime-local"] {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 12px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line-strong);
+  background: var(--color-night-2);
+  color: var(--color-snow);
+  font-size: 1rem;
+}
+
+/* Mapa (Leaflet) */
+.map-shell {
+  position: relative;
+  height: 58svh;
+  min-height: 320px;
+  border-bottom: 1px solid var(--line);
+}
+.map-shell .leaflet-container {
+  background: #172347;
+  font-family: var(--font-sans);
+}
+.leaflet-control-attribution {
+  font-size: 11px;
+}
+.leaflet-control-attribution a {
+  /* Área táctil más alta sin agrandar el texto de la atribución. */
+  display: inline-block;
+  padding-block: 4px;
+}
+/* Botones de zoom del mapa: 44 × 44 px (Leaflet usa 30 px en pantallas táctiles). */
+.map-shell .leaflet-touch .leaflet-bar a,
+.map-shell .leaflet-bar a {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  font-size: 24px;
+}
+.station-marker {
+  display: grid;
+  place-items: center;
+}
+.station-marker__dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--color-night);
+  box-shadow: 0 0 0 2px var(--color-snow);
+}
+.station-marker--proposed .station-marker__dot {
+  box-shadow: 0 0 0 2px var(--color-night);
+  outline: 2px dashed var(--color-snow);
+  outline-offset: 2px;
+}
+.station-marker--compact .station-marker__label {
+  display: none;
+}
+.station-marker__label {
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgb(15 24 48 / 0.85);
+  color: var(--color-snow);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.map-shell .stage__note {
+  left: 56px;
+  z-index: 500;
+}
+
+/* Brújula */
+.compass {
+  position: relative;
+  width: min(72vw, 300px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .stage {
+    height: 62vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .mode-nav,
+  .top-bar,
+  .no-print,
+  .skip-link {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .panel {
+    background: #fff !important;
+    border-color: #999 !important;
+    break-inside: avoid;
+  }
+  .muted,
+  .small {
+    color: #333 !important;
+  }
+}
+
+/* ------------------------------------------------- esferas de planeta (CSS) */
+
+.orb {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  isolation: isolate;
+}
+.orb__body {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: var(--base);
+  background-repeat: repeat-x;
+  background-size: calc(var(--s) * 2) 100%;
+  background-position: 18% 0;
+  /* Luz desde arriba a la izquierda, sombra al lado opuesto y brillo atmosférico en el borde. */
+  box-shadow:
+    inset calc(var(--s) * -0.2) calc(var(--s) * -0.12) calc(var(--s) * 0.3) rgb(2 5 14 / 0.82),
+    inset calc(var(--s) * 0.04) calc(var(--s) * 0.04) calc(var(--s) * 0.12) rgb(255 255 255 / 0.18),
+    0 0 calc(var(--s) * 0.28) rgb(var(--glow) / 0.28);
+}
+.orb__body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 26%, rgb(255 255 255 / 0.22), transparent 42%);
+}
+.orb__body--plain {
+  background-image: radial-gradient(circle at 36% 32%, #fff3c4 0%, var(--base) 45%, #e08a1e 100%);
+  box-shadow: 0 0 calc(var(--s) * 0.5) rgb(255 190 90 / 0.55);
+}
+.orb--spin .orb__body:not(.orb__body--plain) {
+  animation: orb-spin 70s linear infinite;
+}
+@keyframes orb-spin {
+  to {
+    background-position-x: calc(var(--s) * -2 + 18%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orb--spin .orb__body {
+    animation: none;
+  }
+}
+.orb__ring {
+  position: absolute;
+  left: -48%;
+  right: -48%;
+  top: 33%;
+  bottom: 33%;
+  border-radius: 50%;
+  border: calc(var(--s, 1px) * 0) solid transparent;
+  background: radial-gradient(
+    closest-side,
+    transparent 58%,
+    rgb(236 220 178 / 0.9) 60%,
+    rgb(190 168 120 / 0.85) 74%,
+    rgb(236 220 178 / 0.8) 78%,
+    transparent 80%
+  );
+  transform: rotate(-16deg);
+  z-index: 0;
+}
+.orb--saturno .orb__body {
+  z-index: 1;
+}
+.orb__ring--front {
+  z-index: 2;
+  clip-path: inset(50% 0 0 0);
+}
+
+/* ------------------------------------------------------------ portada */
+
+.home-hero {
+  display: grid;
+  gap: 22px;
+  padding-top: 22px;
+}
+.home-hero__aside {
+  display: none;
+}
+.home-hero__title {
+  font-size: clamp(2.4rem, 10.5vw, 4.4rem);
+  margin: 0;
+}
+.scan-cta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 92px;
+  padding: 14px 22px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #f8c97f 0%, var(--color-sol) 55%, #e8a13f 100%);
+  color: #1d1406;
+  text-decoration: none;
+  box-shadow:
+    0 10px 30px rgb(244 184 96 / 0.28),
+    inset 0 1px 0 rgb(255 255 255 / 0.45);
+  transition: transform 0.15s ease;
+}
+.scan-cta:active {
+  transform: scale(0.985);
+}
+.scan-cta__icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: rgb(29 20 6 / 0.12);
+}
+.scan-cta__title {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+.scan-cta__hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.planet-strip {
+  display: flex;
+  gap: 12px;
+  margin: 0 -18px;
+  padding: 6px 18px 14px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 18px;
+  scrollbar-width: none;
+  list-style: none;
+}
+.planet-strip::-webkit-scrollbar {
+  display: none;
+}
+.planet-strip li {
+  scroll-snap-align: start;
+  flex: none;
+}
+.planet-chip {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: 92px;
+  padding: 12px 6px 10px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgb(22 33 63 / 0.6);
+  text-decoration: none;
+  min-height: 44px;
+}
+.planet-chip:hover {
+  border-color: var(--line-strong);
+  background: rgb(34 48 90 / 0.7);
+}
+.planet-chip__name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.planet-chip__km {
+  font-size: 0.78rem;
+  color: var(--color-mist);
+}
+.steps {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: paso;
+}
+.steps li {
+  counter-increment: paso;
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgb(22 33 63 / 0.5);
+}
+.steps li::before {
+  content: counter(paso);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-sol);
+  color: #1d1406;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+.steps strong {
+  display: block;
+}
+.sim-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px dashed var(--line-strong);
+  text-decoration: none;
+  min-height: 44px;
+}
+.sim-card:hover {
+  background: rgb(238 242 247 / 0.05);
+}
+@media (min-width: 760px) {
+  .home-hero {
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: center;
+    gap: 40px;
+    padding-top: 44px;
+  }
+  .home-hero__aside {
+    display: grid;
+    place-items: center;
+  }
+  .scan-cta {
+    min-height: 108px;
+  }
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .planet-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    overflow: visible;
+    margin: 0;
+    padding-inline: 0;
+  }
+  .planet-chip {
+    width: 100%;
+  }
+}
+
+/* ------------------------------------------------------- escáner de QR */
+
+.scanner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 68svh;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #050a18;
+  border: 1px solid var(--line-strong);
+}
+.scanner video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.scanner__frame {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: min(62%, 280px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 24px;
+  box-shadow: 0 0 0 100vmax rgb(5 10 24 / 0.55);
+  border: 3px solid var(--color-sol);
+  pointer-events: none;
+}
+.scanner__msg {
+  position: absolute;
+  inset: auto 12px 12px 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgb(15 24 48 / 0.88);
+  text-align: center;
+  font-weight: 500;
+}
+.scanner__idle {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  justify-items: center;
+}
+
+/* Realidad aumentada: botón principal de cada estación */
+.ar-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 0;
+  background: linear-gradient(135deg, #f8c97f, var(--color-sol));
+  color: #1d1406;
+  font: inherit;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: 0 6px 22px rgb(244 184 96 / 0.3);
+}
+.ar-cta:disabled {
+  opacity: 0.6;
+}
+.ar-note {
+  flex-basis: 100%;
+  font-size: 0.85rem;
+  color: var(--color-mist);
+}
+
+@media (min-width: 1000px) {
+  .planet-strip {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
