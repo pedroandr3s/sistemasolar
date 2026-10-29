@@ -53,3 +53,6 @@ next-env.d.ts
 
 # python
 __pycache__/
+
+# salidas locales de pruebas
+*.out
