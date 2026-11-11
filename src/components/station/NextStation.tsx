@@ -26,7 +26,7 @@ export function NextStation({
     const neptuneKm = kmToModelMeters(NEPTUNE_MEAN_DISTANCE_KM) / 1000;
     const proximaKm = (PROXIMA_AU * SCALE.metersPerAU) / 1000;
     return (
-      <div className="panel" style={{ display: "grid", gap: 10 }}>
+      <div className="panel" style={{ display: "grid", gap: 10, marginTop: 24 }}>
         <p style={{ fontWeight: 600, margin: 0 }}>Llegaste a la última estación del recorrido.</p>
         <FinalJourney />
         <p className="small muted" style={{ margin: 0 }}>
@@ -34,7 +34,7 @@ export function NextStation({
           cordillera. Y la estrella más cercana, Próxima Centauri, a unos{" "}
           {formatNumber(Math.round(proximaKm / 10_000) * 10_000)} km: más lejos que la Luna real (384.400 km).
         </p>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div className="btn-row">
           <Link className="btn btn--primary btn--small" href="/bitacora">
             Ver mi bitácora del recorrido
           </Link>
@@ -54,13 +54,10 @@ export function NextStation({
   const proposed = next.status !== "verificada";
 
   return (
-    <div style={{ display: "grid", gap: 10 }}>
+    <div className="next-block">
       <Link className="next-sign" href={stationPath(next.station.id)}>
-        <span style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 600, fontSize: "1.15rem" }}>
-          <span
-            aria-hidden="true"
-            style={{ width: 14, height: 14, borderRadius: "50%", background: next.body.color }}
-          />
+        <span className="next-sign__name">
+          <span className="next-sign__dot" aria-hidden="true" style={{ background: next.body.color }} />
           Siguiente: {next.station.name}
         </span>
         <span className="next-sign__km tabular">{formatDistance(km)}</span>
@@ -69,7 +66,7 @@ export function NextStation({
         </span>
         <Icon name="arrow-right" />
       </Link>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      <div className="btn-row">
         <Link className="btn btn--small" href={`${stationPath(current.station.id)}/orientarme`}>
           <Icon name="compass" size={18} />
           Cómo llegar

@@ -52,9 +52,7 @@ export function MapMode({ stationId }: { stationId?: string }) {
   return (
     <div>
       <div className="wrap" style={{ paddingTop: 14 }}>
-        <h1 className="display" style={{ fontSize: "2.4rem", margin: 0 }}>
-          Mapa del recorrido
-        </h1>
+        <h1 className="page-title">Mapa del recorrido</h1>
         <p className="small muted" style={{ margin: "4px 0 0" }}>
           De la Plaza de Armas de San Carlos a la de San Fabián de Alico por la Ruta N-31:{" "}
           {formatDistance(route.length)}.
@@ -243,15 +241,10 @@ export function MapMode({ stationId }: { stationId?: string }) {
         )}
 
         <section className="section" aria-labelledby="estaciones">
-          <h2 id="estaciones" className="section-title" style={{ fontSize: "1.4rem" }}>
+          <h2 id="estaciones" className="section-title section-title--sub">
             Estaciones
           </h2>
-          <div
-            style={{ overflowX: "auto" }}
-            tabIndex={0}
-            role="region"
-            aria-label="Tabla de distancias de las estaciones"
-          >
+          <div className="table-scroll" tabIndex={0} role="region" aria-label="Tabla de distancias de las estaciones">
             <table className="small tabular" style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
               <caption className="sr-only">Distancias de cada estación</caption>
               <thead>

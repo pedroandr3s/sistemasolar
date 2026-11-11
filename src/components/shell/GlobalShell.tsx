@@ -8,10 +8,7 @@ export function GlobalShell({ children, wide = false }: { children: ReactNode; w
     <div className="with-nav">
       <header className="top-bar">
         <Link href="/" className="brand">
-          <span
-            aria-hidden="true"
-            style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--color-sol)" }}
-          />
+          <span className="brand__mark" aria-hidden="true" />
           Sistema solar a escala
         </Link>
         <span>Ñuble, Chile</span>

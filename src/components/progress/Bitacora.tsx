@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { BODIES } from "@/data/bodies";
 import { STATIONS } from "@/config/stations";
@@ -19,9 +20,7 @@ export function Bitacora() {
 
   return (
     <div className="wrap" style={{ paddingTop: 14 }}>
-      <h1 className="display" style={{ fontSize: "2.4rem", margin: 0 }}>
-        Mi bitácora
-      </h1>
+      <h1 className="page-title">Mi bitácora</h1>
       <p className="muted" style={{ marginTop: 6 }}>
         {visited.length === 0
           ? "Todavía no abres ninguna estación. Escanea el código QR de la primera, el Sol."
@@ -29,17 +28,9 @@ export function Bitacora() {
         Se guarda solo en este teléfono.
       </p>
 
-      <div aria-hidden="true" style={{ display: "flex", gap: 6, marginTop: 14 }}>
+      <div className="log-progress" aria-hidden="true">
         {stations.map((s) => (
-          <span
-            key={s.id}
-            style={{
-              flex: 1,
-              height: 8,
-              borderRadius: 4,
-              background: progress.visits[s.id] ? BODIES[s.bodyId].color : "var(--color-night-3)",
-            }}
-          />
+          <span key={s.id} style={progress.visits[s.id] ? { background: BODIES[s.bodyId].color } : undefined} />
         ))}
       </div>
 
@@ -53,7 +44,7 @@ export function Bitacora() {
         </div>
       )}
 
-      <ol style={{ listStyle: "none", padding: 0, margin: "22px 0 0" }}>
+      <ol className="log-list">
         {stations.map((s) => {
           const body = BODIES[s.bodyId];
           const date = progress.visits[s.id];
@@ -61,53 +52,27 @@ export function Bitacora() {
           return (
             <li
               key={s.id}
-              style={{
-                borderTop: "1px solid var(--line)",
-                padding: "14px 0",
-                display: "grid",
-                gridTemplateColumns: "44px 1fr",
-                gap: 12,
-              }}
+              className="log-item"
+              data-done={date ? "true" : "false"}
+              style={{ "--body": body.color } as CSSProperties}
             >
-              <span
-                aria-hidden="true"
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  display: "grid",
-                  placeItems: "center",
-                  background: date ? body.color : "transparent",
-                  border: date ? "none" : "1.5px dashed var(--line-strong)",
-                  color: "var(--color-night)",
-                }}
-              >
-                {date && <Icon name="check" size={20} />}
+              <span className="log-item__badge" aria-hidden="true">
+                {date && <Icon name="check" size={22} />}
               </span>
               <div>
-                <Link
-                  href={stationPath(s.id)}
-                  style={{
-                    fontWeight: 600,
-                    textDecoration: "none",
-                    fontSize: "1.1rem",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    minHeight: 44,
-                  }}
-                >
+                <Link href={stationPath(s.id)} className="log-item__name">
                   {s.name}
                 </Link>
                 {date ? (
                   <>
-                    <p className="small muted" style={{ margin: "2px 0 6px" }}>
+                    <p className="small muted" style={{ margin: "0 0 6px" }}>
                       Insignia obtenida el {formatChileDate(new Date(date))}
                       {quiz !== undefined ? `. Quiz: ${quiz} de 3` : ""}.
                     </p>
                     <p style={{ margin: 0 }}>{body.keyIdea}</p>
                   </>
                 ) : (
-                  <p className="small muted" style={{ margin: "2px 0 0" }}>
+                  <p className="small muted" style={{ margin: 0 }}>
                     Aún no la abres.
                   </p>
                 )}

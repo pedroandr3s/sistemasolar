@@ -53,7 +53,7 @@ export function RouteRoad() {
     lastLabel = yLabel;
     return { ...r, yDot, yLabel } as Item;
   });
-  const height = Math.max(TOP + ROAD_H + 110, lastLabel + 130);
+  const height = Math.max(TOP + ROAD_H + 132, lastLabel + 152);
   const stations = items.filter((i): i is Extract<Item, { type: "station" }> => i.type === "station");
 
   return (

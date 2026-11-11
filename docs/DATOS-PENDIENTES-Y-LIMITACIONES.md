@@ -36,7 +36,8 @@ Las cuatro primeras quedan dentro de la zona urbana de San Carlos (los primeros 
 
 - La app se probó automáticamente en Chromium sin ventana, con pantallas de teléfono emuladas y WebGL por software. **No se ha probado en teléfonos físicos.** Falta la ronda de pruebas reales descrita en [PRUEBAS-EN-CELULAR.md](PRUEBAS-EN-CELULAR.md), incluida Safari en iPhone.
 - El GPS se probó con una ubicación **simulada** dentro de las pruebas automáticas; la brújula no se puede probar sin un dispositivo real.
-- La realidad aumentada (WebXR en Android, AR Quick Look en iPhone) está implementada pero no se pudo probar en un dispositivo.
+- La realidad aumentada muestra los cuerpos al tamaño de la escala del recorrido (el Sol, 18,6 m a unos 34 m de distancia). El material nuevo del Sol y esos tamaños se verificaron con capturas y pruebas unitarias; falta confirmarlos en un teléfono. AR Quick Look (iPhone) no se ha probado, y allí el Sol se reduce a la décima parte porque el visor coloca el modelo junto al visitante.
+- En AR no hay oclusión: un Sol de 18,6 m atraviesa visualmente muros y árboles. Se aprecia mejor en un lugar abierto.
 
 ### GPS, brújula y conectividad
 

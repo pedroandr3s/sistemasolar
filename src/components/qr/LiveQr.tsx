@@ -45,9 +45,7 @@ export function LiveQr() {
   return (
     <div className="wrap-wide" style={{ paddingTop: 14 }}>
       <div className="wrap" style={{ paddingInline: 0 }}>
-        <h1 className="display" style={{ fontSize: "2.4rem", margin: 0 }}>
-          QR de prueba
-        </h1>
+        <h1 className="page-title">QR de prueba</h1>
         <p className="muted" style={{ marginTop: 6 }}>
           Códigos para la dirección <strong style={{ color: "var(--color-snow)" }}>{base}</strong>. Escanéalos con la
           cámara del teléfono. No son los QR para imprimir en las estaciones.
@@ -83,8 +81,8 @@ export function LiveQr() {
           listStyle: "none",
           padding: 0,
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))",
-          gap: 14,
+          gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))",
+          gap: 12,
         }}
       >
         {[...STATIONS]
@@ -93,7 +91,7 @@ export function LiveQr() {
             <li
               key={s.id}
               className="panel"
-              style={{ display: "grid", gap: 8, justifyItems: "center", textAlign: "center" }}
+              style={{ display: "grid", gap: 8, justifyItems: "center", textAlign: "center", padding: 12 }}
             >
               <div
                 style={{ width: "100%", maxWidth: 200, background: "#fff", borderRadius: 8 }}

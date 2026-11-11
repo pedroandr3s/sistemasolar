@@ -6,14 +6,15 @@
  */
 import * as THREE from "three";
 import type { Body } from "@/data/bodies";
-import { xr, type XRSessionLike } from "./ar";
-import { bakeSunTexture, createGlowTexture, createSunMaterial } from "./sunMaterial";
+import { arPlacement, quickLookScale, xr, type XRSessionLike } from "./ar";
+import { bakeSunTexture, createCoronaMaterial, createSunArMaterial } from "./sunMaterial";
 
-function loadTexture(url: string): Promise<THREE.Texture | null> {
+function loadTexture(url: string, color = true): Promise<THREE.Texture | null> {
   return new THREE.TextureLoader()
     .loadAsync(url)
     .then((t) => {
-      t.colorSpace = THREE.SRGBColorSpace;
+      if (color) t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 4;
       return t;
     })
     .catch(() => null);
@@ -21,24 +22,41 @@ function loadTexture(url: string): Promise<THREE.Texture | null> {
 
 /**
  * Modo del modelo:
- * - «vivo»: se renderiza con three.js (WebXR); puede llevar el shader animado del Sol.
+ * - «vivo»: se renderiza con three.js (WebXR); puede llevar shaders propios.
  * - «exportar»: se convierte a USDZ (AR Quick Look); el exportador solo admite materiales
  *   PBR estándar, así que el Sol usa una textura horneada en vez del shader.
  */
 type BuildMode = "vivo" | "exportar";
 
-/** Modelo sencillo del cuerpo para AR (radio en metros). */
-async function buildModel(body: Body, radius: number, mode: BuildMode): Promise<THREE.Group> {
+/** Materiales que hay que animar en cada cuadro (solo el Sol en modo «vivo»). */
+interface Animated {
+  time: THREE.ShaderMaterial[];
+}
+
+/** Modelo del cuerpo para AR (radio en metros). El primer hijo del grupo es la esfera que gira. */
+async function buildModel(
+  body: Body,
+  radius: number,
+  mode: BuildMode,
+): Promise<{ group: THREE.Group; animated: Animated }> {
   const group = new THREE.Group();
+  const animated: Animated = { time: [] };
   const tilt = body.obliquityDeg > 90 ? 180 - body.obliquityDeg : body.obliquityDeg;
   group.rotation.z = (-tilt * Math.PI) / 180;
   const isSun = body.id === "sol";
-  const texUrl = body.render.cloudCover ?? body.render.texture?.low;
-  const map = !isSun && texUrl ? await loadTexture(texUrl) : null;
+  const r = body.render;
+  // De cerca y en grande (Júpiter mide casi 2 m) conviene la textura de más resolución.
+  const texUrl = r.cloudCover ?? (radius > 0.25 ? r.texture?.high : r.texture?.low);
+  const [map, bump] = await Promise.all([
+    !isSun && texUrl ? loadTexture(texUrl) : null,
+    !isSun && r.bump && !r.cloudCover ? loadTexture(r.bump, false) : null,
+  ]);
 
   let material: THREE.Material;
   if (isSun && mode === "vivo") {
-    material = createSunMaterial();
+    const sunMaterial = createSunArMaterial();
+    animated.time.push(sunMaterial);
+    material = sunMaterial;
   } else if (isSun) {
     const baked = bakeSunTexture();
     material = new THREE.MeshStandardMaterial({
@@ -50,27 +68,45 @@ async function buildModel(body: Body, radius: number, mode: BuildMode): Promise<
       metalness: 0,
     });
   } else {
-    material = new THREE.MeshStandardMaterial({ map, color: map ? "#ffffff" : body.color, roughness: 1 });
+    material = new THREE.MeshStandardMaterial({
+      map,
+      bumpMap: bump,
+      bumpScale: bump ? 2.2 : 0,
+      color: map ? "#ffffff" : body.color,
+      roughness: 0.95,
+      metalness: 0,
+    });
   }
 
-  const sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 40), material);
-  sphere.scale.y = body.render.polarRatio;
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, 96, 64), material);
+  sphere.scale.y = r.polarRatio;
   group.add(sphere);
 
+  if (r.clouds && mode === "vivo") {
+    const cloudMap = await loadTexture(r.clouds.texture);
+    if (cloudMap) {
+      const clouds = new THREE.Mesh(
+        new THREE.SphereGeometry(radius * 1.012, 72, 48),
+        new THREE.MeshStandardMaterial({
+          map: cloudMap,
+          transparent: true,
+          opacity: r.clouds.opacity,
+          depthWrite: false,
+          roughness: 1,
+        }),
+      );
+      clouds.scale.y = r.polarRatio;
+      sphere.add(clouds); // gira con el planeta
+    }
+  }
+
   if (isSun && mode === "vivo") {
-    // Resplandor en dos capas (núcleo más brillante y halo amplio) con mezcla
-    // aditiva: siempre mira a la cámara, igual que en el visualizador 3D normal.
-    const glow = createGlowTexture();
-    const halo = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: glow, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.85 }),
-    );
-    halo.scale.set(radius * 5.4, radius * 5.4, 1);
-    group.add(halo);
-    const core = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: glow, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.55 }),
-    );
-    core.scale.set(radius * 2.8, radius * 2.8, 1);
-    group.add(core);
+    const outer = radius * 1.75;
+    const coronaMaterial = createCoronaMaterial(radius, outer);
+    animated.time.push(coronaMaterial);
+    const corona = new THREE.Mesh(new THREE.SphereGeometry(outer, 64, 40), coronaMaterial);
+    corona.renderOrder = 1;
+    group.add(corona);
   }
 
   const rings = body.render.rings;
@@ -94,14 +130,18 @@ async function buildModel(body: Body, radius: number, mode: BuildMode): Promise<
     ring.rotation.x = -Math.PI / 2;
     group.add(ring);
   }
-  return group;
+  return { group, animated };
 }
 
 /** AR Quick Look (iOS): exporta un USDZ y lo abre con el visor del sistema. */
 export async function openQuickLook(body: Body): Promise<void> {
   const { USDZExporter } = await import("three/examples/jsm/exporters/USDZExporter.js");
   const scene = new THREE.Scene();
-  scene.add(await buildModel(body, 0.25, "exportar"));
+  // A la escala del recorrido (los cuerpos enormes, reducidos: ver quickLookScale).
+  const radius = arPlacement(body).radiusM * quickLookScale(body);
+  const { group } = await buildModel(body, radius, "exportar");
+  group.position.y = radius; // apoyado sobre el suelo, no enterrado hasta la mitad
+  scene.add(group);
   const exporter = new USDZExporter();
   const data = await exporter.parseAsync(scene);
   const blob = new Blob([data as BlobPart], { type: "model/vnd.usdz+zip" });
@@ -160,13 +200,10 @@ export async function startWebXR(body: Body, overlay: HTMLElement): Promise<() =
   sun.position.set(-1, 0.5, 1);
   scene.add(sun);
   const camera = new THREE.PerspectiveCamera();
-  const isSun = body.id === "sol";
-  // El Sol se ve mejor más lejos y más grande (como un cuerpo del cielo, no un objeto
-  // de mesa); los demás cuerpos conservan la distancia y el tamaño de antes.
-  const distance = isSun ? 2.4 : 1;
-  const heightOffset = isSun ? 0.5 : 0;
-  const model = await buildModel(body, isSun ? 0.42 : 0.18, "vivo");
-  const sunMaterial = isSun ? ((model.children[0] as THREE.Mesh).material as THREE.ShaderMaterial) : null;
+  // Tamaño real a la escala del recorrido (1 UA = 2 km): ver arPlacement.
+  const place = arPlacement(body);
+  const { group: model, animated } = await buildModel(body, place.radiusM, "vivo");
+  model.visible = false; // hasta anclarlo
   scene.add(model);
 
   let placed = false;
@@ -188,14 +225,16 @@ export async function startWebXR(body: Body, overlay: HTMLElement): Promise<() =
       if (validPoseFrames >= 3) {
         const cam = renderer.xr.getCamera();
         const forward = yawOnlyForward(cam.quaternion);
-        model.position.copy(cam.position).add(forward.multiplyScalar(distance));
-        model.position.y = cam.position.y + heightOffset;
+        model.position.copy(cam.position).add(forward.multiplyScalar(place.distanceM));
+        model.position.y = cam.position.y + place.liftM;
+        model.visible = true;
         placed = true;
       }
     }
 
-    if (sunMaterial) sunMaterial.uniforms.uTime!.value += dt;
-    model.children[0]!.rotation.y += dt * 0.3;
+    for (const m of animated.time) m.uniforms.uTime!.value += dt;
+    // El Sol gira despacio (su superficie ya se mueve); los planetas, algo más rápido.
+    model.children[0]!.rotation.y += dt * (body.id === "sol" ? 0.02 : 0.25);
     renderer.render(scene, camera);
   });
 
@@ -207,6 +246,7 @@ export async function startWebXR(body: Body, overlay: HTMLElement): Promise<() =
       const mat = m.material as THREE.Material | THREE.Material[] | undefined;
       (Array.isArray(mat) ? mat : mat ? [mat] : []).forEach((x) => {
         (x as THREE.MeshStandardMaterial).map?.dispose();
+        (x as THREE.MeshStandardMaterial).bumpMap?.dispose();
         x.dispose();
       });
     });

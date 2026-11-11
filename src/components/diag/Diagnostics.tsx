@@ -146,14 +146,14 @@ export function Diagnostics() {
 
   return (
     <div className="wrap" style={{ paddingTop: 14 }}>
-      <h1 className="display" style={{ fontSize: "2.4rem", margin: 0 }}>
+      <h1 className="page-title">
         Diagnóstico
       </h1>
       <p className="muted" style={{ marginTop: 6 }}>
         Para probar la app en un teléfono antes de instalarla. Nada de esto se envía a ningún servidor.
       </p>
 
-      <h2 className="section-title" style={{ fontSize: "1.3rem", marginTop: 22 }}>
+      <h2 className="section-title section-title--sub" style={{ marginTop: 28 }}>
         Dirección y códigos QR
       </h2>
       <Row
@@ -193,7 +193,7 @@ export function Diagnostics() {
         }
       />
 
-      <h2 className="section-title" style={{ fontSize: "1.3rem", marginTop: 22 }}>
+      <h2 className="section-title section-title--sub" style={{ marginTop: 28 }}>
         Sensores y permisos
       </h2>
       <Row
@@ -244,7 +244,7 @@ export function Diagnostics() {
         </button>
       </div>
 
-      <h2 className="section-title" style={{ fontSize: "1.3rem", marginTop: 22 }}>
+      <h2 className="section-title section-title--sub" style={{ marginTop: 28 }}>
         Visualización y datos
       </h2>
       <Row

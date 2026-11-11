@@ -207,3 +207,180 @@ export function bakeSunTexture(width = 480, height = 240): THREE.CanvasTexture {
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
 }
+
+// ---------------------------------------------------------------------------
+// Sol para realidad aumentada (WebXR)
+// ---------------------------------------------------------------------------
+// En AR el Sol se ve sobre la imagen de la cámara (clara, sin fondo oscuro ni
+// mapeo de tonos), así que el material del visualizador queda sin contraste y
+// se percibe como un disco de un solo color. Este material usa el mismo
+// principio (ruido procedural, sin archivos), pero con mucho más rango:
+// celdas de granulación con bordes oscuros, manchas solares, zonas brillantes
+// y un oscurecimiento del borde marcado, que es lo que da volumen de esfera.
+// El generador de números pseudoaleatorios no usa sin(), que pierde precisión
+// en algunas GPU de teléfonos y deja el ruido plano.
+
+const SUN_NOISE_GLSL = /* glsl */ `
+  vec3 hash33(vec3 p) {
+    p = fract(p * vec3(0.1031, 0.1030, 0.0973));
+    p += dot(p, p.yxz + 33.33);
+    return fract((p.xxy + p.yxx) * p.zyx) * 2.0 - 1.0;
+  }
+  float gnoise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    vec3 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(mix(dot(hash33(i), f), dot(hash33(i + vec3(1,0,0)), f - vec3(1,0,0)), u.x),
+                   mix(dot(hash33(i + vec3(0,1,0)), f - vec3(0,1,0)), dot(hash33(i + vec3(1,1,0)), f - vec3(1,1,0)), u.x), u.y),
+               mix(mix(dot(hash33(i + vec3(0,0,1)), f - vec3(0,0,1)), dot(hash33(i + vec3(1,0,1)), f - vec3(1,0,1)), u.x),
+                   mix(dot(hash33(i + vec3(0,1,1)), f - vec3(0,1,1)), dot(hash33(i + vec3(1,1,1)), f - vec3(1,1,1)), u.x), u.y), u.z);
+  }
+  float fbm3(vec3 p) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 3; i++) {
+      v += a * gnoise(p);
+      p = p * 2.07 + 11.3;
+      a *= 0.5;
+    }
+    return v;
+  }
+`;
+
+/** Superficie del Sol para AR: alto contraste, manchas, granulación y borde oscurecido. */
+export function createSunArMaterial(): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: /* glsl */ `
+      varying vec3 vPos;
+      varying vec3 vNormalV;
+      varying vec3 vViewDir;
+      void main() {
+        vPos = position;
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vNormalV = normalize(normalMatrix * normal);
+        vViewDir = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      precision highp float;
+      uniform float uTime;
+      varying vec3 vPos;
+      varying vec3 vNormalV;
+      varying vec3 vViewDir;
+      ${SUN_NOISE_GLSL}
+
+      vec3 ramp(float t) {
+        vec3 c0 = vec3(0.16, 0.02, 0.0);
+        vec3 c1 = vec3(0.72, 0.13, 0.01);
+        vec3 c2 = vec3(1.0, 0.44, 0.05);
+        vec3 c3 = vec3(1.0, 0.76, 0.28);
+        vec3 c4 = vec3(1.0, 0.96, 0.8);
+        vec3 c = mix(c0, c1, smoothstep(0.0, 0.25, t));
+        c = mix(c, c2, smoothstep(0.25, 0.5, t));
+        c = mix(c, c3, smoothstep(0.5, 0.75, t));
+        return mix(c, c4, smoothstep(0.75, 1.0, t));
+      }
+
+      void main() {
+        vec3 p = normalize(vPos);
+        float t = uTime;
+
+        // Flujo lento del plasma: deforma el dominio para que nada quede rígido.
+        vec3 warp = vec3(
+          gnoise(p * 2.3 + vec3(0.0, t * 0.021, 0.0)),
+          gnoise(p * 2.3 + vec3(7.3, 0.0, -t * 0.017)),
+          gnoise(p * 2.3 + vec3(t * 0.019, 13.7, 0.0))
+        );
+        vec3 q = p + 0.14 * warp;
+
+        // Celdas de granulación: brillantes al centro, con bordes oscuros.
+        float n1 = gnoise(q * 21.0 + vec3(0.0, 0.0, t * 0.09));
+        float n2 = gnoise(q * 46.0 + vec3(t * 0.13, 5.1, 0.0));
+        float cells = smoothstep(0.0, 0.1, abs(n1)) * 0.6 + smoothstep(0.0, 0.14, abs(n2)) * 0.4;
+
+        // Grandes regiones más calientes y más frías.
+        float big = fbm3(q * 1.7 + vec3(-t * 0.008, 0.0, t * 0.006));
+
+        // Manchas solares, en dos franjas a cada lado del ecuador.
+        float lat = abs(p.y);
+        float belt = smoothstep(0.03, 0.14, lat) * (1.0 - smoothstep(0.5, 0.72, lat));
+        float s = gnoise(p * 3.4 + vec3(41.0, t * 0.003, 17.0)) + 0.35 * gnoise(p * 9.0 + vec3(3.0, 0.0, t * 0.01));
+        float penumbra = smoothstep(0.34, 0.46, s) * belt;
+        float umbra = smoothstep(0.47, 0.56, s) * belt;
+        float faculae = smoothstep(0.16, 0.34, s) * (1.0 - penumbra) * belt;
+
+        float heat = 0.56 + 0.8 * big + 0.2 * (cells - 0.7) + 0.2 * faculae;
+        heat = mix(heat, 0.2, penumbra * 0.85);
+        heat = mix(heat, 0.02, umbra);
+        vec3 col = ramp(clamp(heat, 0.0, 1.0));
+
+        // Oscurecimiento y enrojecimiento hacia el borde: da volumen de esfera.
+        float mu = clamp(dot(normalize(vNormalV), normalize(vViewDir)), 0.0, 1.0);
+        float limb = 0.22 + 0.78 * pow(mu, 0.62);
+        col *= limb;
+        col.g *= mix(0.72, 1.0, mu);
+        col.b *= mix(0.45, 1.0, mu);
+        // Un hilo de luz en el contorno, que enlaza con la corona.
+        col += vec3(1.0, 0.42, 0.08) * pow(1.0 - mu, 5.0) * 0.5;
+
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+  });
+}
+
+/**
+ * Corona para AR: una esfera mayor que el Sol, vista por dentro, cuyo brillo depende
+ * de la distancia entre cada rayo de visión y el centro del Sol (cálculo analítico).
+ * No usa «sprites» ni depende del búfer de profundidad: dentro del disco solar se
+ * descarta, y hacia afuera se desvanece con rayos irregulares que cambian lentamente.
+ */
+export function createCoronaMaterial(innerRadius: number, outerRadius: number): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uInner: { value: innerRadius },
+      uOuter: { value: outerRadius },
+    },
+    side: THREE.BackSide,
+    transparent: true,
+    depthWrite: false,
+    vertexShader: /* glsl */ `
+      varying vec3 vPos;
+      varying vec3 vView;
+      varying vec3 vCenter;
+      void main() {
+        vPos = position;
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vView = mv.xyz;
+        vCenter = (modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      precision highp float;
+      uniform float uTime;
+      uniform float uInner;
+      uniform float uOuter;
+      varying vec3 vPos;
+      varying vec3 vView;
+      varying vec3 vCenter;
+      ${SUN_NOISE_GLSL}
+      void main() {
+        vec3 rd = normalize(vView);
+        float along = dot(vCenter, rd);
+        float d = length(vCenter - rd * along);
+        if (d < uInner * 0.992) discard;
+        float fall = clamp((d - uInner) / (uOuter - uInner), 0.0, 1.0);
+        vec3 dir = normalize(vPos);
+        float rays = fbm3(dir * 2.6 + vec3(0.0, uTime * 0.02, 0.0)) + 0.5 * gnoise(dir * 7.0 + vec3(uTime * 0.03, 0.0, 0.0));
+        float reach = clamp(0.62 + 1.5 * rays, 0.2, 1.6);
+        float glow = exp(-fall * 5.2 / reach) * (1.0 - smoothstep(0.7, 1.0, fall));
+        vec3 col = mix(vec3(1.0, 0.86, 0.55), vec3(1.0, 0.4, 0.08), smoothstep(0.0, 0.45, fall));
+        gl_FragColor = vec4(col, clamp(glow * 0.95, 0.0, 1.0));
+      }
+    `,
+  });
+}

@@ -12,7 +12,7 @@ export default function SourcesPage() {
   return (
     <GlobalShell>
       <div className="wrap" style={{ paddingTop: 14 }}>
-        <h1 className="display" style={{ fontSize: "2.4rem", margin: 0 }}>
+        <h1 className="page-title">
           Fuentes, licencias y métodos
         </h1>
         <p className="muted" style={{ marginTop: 6 }}>

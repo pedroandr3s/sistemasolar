@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ModeNav } from "@/components/shell/ModeNav";
@@ -17,14 +18,12 @@ export default async function StationLayout({ children, params }: LayoutProps<"/
   const total = getPlacements().length;
 
   return (
-    <div className="with-nav">
+    // --body: el color del astro tiñe la página de su estación (ver globals.css).
+    <div className="with-nav" style={{ "--body": placement.body.color } as CSSProperties}>
       <header>
         <div className="top-bar">
           <Link href="/" className="brand">
-            <span
-              aria-hidden="true"
-              style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--color-sol)" }}
-            />
+            <span className="brand__mark" aria-hidden="true" />
             Sistema solar a escala
           </Link>
           <span className="tabular">

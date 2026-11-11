@@ -7,7 +7,7 @@ const CAR_KMH = 100;
 /** Viajar desde el Sol hasta cada planeta: luz, auto y recorrido. */
 export function JourneyTable({ highlight }: { highlight?: string }) {
   return (
-    <div style={{ overflowX: "auto" }} tabIndex={0} role="region" aria-label="Tabla de tiempos de viaje desde el Sol">
+    <div className="table-scroll" tabIndex={0} role="region" aria-label="Tabla de tiempos de viaje desde el Sol">
       <table className="small tabular" style={{ width: "100%", borderCollapse: "collapse", minWidth: 480 }}>
         <caption className="sr-only">Tiempo de viaje desde el Sol</caption>
         <thead>
@@ -38,7 +38,7 @@ export function JourneyTable({ highlight }: { highlight?: string }) {
             return (
               <tr
                 key={id}
-                style={{ borderTop: "1px solid var(--line)", background: on ? "rgb(244 184 96 / 0.08)" : undefined }}
+                style={{ borderTop: "1px solid var(--line)", background: on ? "rgb(247 186 92 / 0.12)" : undefined }}
               >
                 <th scope="row" style={{ padding: "10px 6px 10px 0", textAlign: "left", fontWeight: 600 }}>
                   <span

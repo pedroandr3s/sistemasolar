@@ -17,7 +17,7 @@ export function LearnMode({ stationId }: { stationId?: string }) {
 
   return (
     <div className="wrap" style={{ paddingTop: 14 }}>
-      <h1 className="display" style={{ fontSize: "2.4rem", margin: 0 }}>
+      <h1 className="page-title">
         Aprender jugando con el sistema solar
       </h1>
       <p className="muted" style={{ marginTop: 6 }}>

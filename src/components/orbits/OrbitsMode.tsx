@@ -99,7 +99,7 @@ export function OrbitsMode({ initialSelected }: { initialSelected?: PlanetId | n
   return (
     <div>
       <div className="wrap" style={{ paddingTop: 14 }}>
-        <h1 className="display" style={{ fontSize: "2.4rem", margin: 0 }}>
+        <h1 className="page-title">
           Dónde están los planetas
         </h1>
         <p style={{ margin: "6px 0 0", fontWeight: 600 }} className="tabular" aria-live="polite">
@@ -276,7 +276,7 @@ export function OrbitsMode({ initialSelected }: { initialSelected?: PlanetId | n
         </div>
 
         <section className="section" aria-labelledby="planetas-lista">
-          <h2 id="planetas-lista" className="section-title" style={{ fontSize: "1.4rem" }}>
+          <h2 id="planetas-lista" className="section-title section-title--sub">
             Planetas
           </h2>
           <p className="small muted" style={{ marginTop: 0 }}>
@@ -369,7 +369,7 @@ export function OrbitsMode({ initialSelected }: { initialSelected?: PlanetId | n
         </section>
 
         <section className="section" aria-labelledby="por-que">
-          <h2 id="por-que" className="section-title" style={{ fontSize: "1.4rem" }}>
+          <h2 id="por-que" className="section-title section-title--sub">
             ¿Por qué cambian de lugar?
           </h2>
           <div className="prose-block">

@@ -63,7 +63,7 @@ export function LevelTabs({ panels }: { panels: Record<LevelKey, ReactNode> }) {
           id={`${baseId}-panel-${l.key}`}
           aria-labelledby={`${baseId}-tab-${l.key}`}
           hidden={active !== l.key}
-          style={{ marginTop: 20 }}
+          className="level-panel"
         >
           {panels[l.key]}
         </div>

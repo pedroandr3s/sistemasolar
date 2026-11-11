@@ -23,16 +23,22 @@ export function Quiz({ stationId, questions }: { stationId: string; questions: Q
 
   return (
     <div>
-      <ol style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 24 }}>
+      <ol className="quiz">
         {questions.map((q, qi) => {
           const chosen = answers[qi];
           return (
             <li key={q.question}>
-              <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-                <legend style={{ fontWeight: 600, marginBottom: 10 }}>
-                  {qi + 1}. {q.question}
+              <fieldset>
+                <legend>
+                  <span className="quiz__n" aria-hidden="true">
+                    {qi + 1}
+                  </span>
+                  <span>
+                    <span className="sr-only">{qi + 1}. </span>
+                    {q.question}
+                  </span>
                 </legend>
-                <div style={{ display: "grid", gap: 8 }}>
+                <div className="quiz__options">
                   {q.options.map((opt, oi) => {
                     let state: "idle" | "correct" | "wrong" = "idle";
                     if (chosen !== null && chosen !== undefined) {
@@ -57,7 +63,7 @@ export function Quiz({ stationId, questions }: { stationId: string; questions: Q
                   })}
                 </div>
                 {chosen !== null && chosen !== undefined && (
-                  <p className="small" style={{ marginTop: 10 }} role="status">
+                  <p className="quiz__feedback" role="status">
                     <strong>{chosen === q.correct ? "Correcto. " : "No era esa. "}</strong>
                     {q.explanation}
                   </p>

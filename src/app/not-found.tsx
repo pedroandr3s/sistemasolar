@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <GlobalShell>
       <div className="wrap" style={{ paddingTop: 40 }}>
-        <h1 className="display" style={{ fontSize: "2.6rem", margin: 0 }}>
+        <h1 className="page-title">
           Esta página no existe
         </h1>
         <p className="muted">

@@ -90,4 +90,24 @@ Sin cuentas, analítica ni servidor propio de datos. La ubicación se pide solo 
 
 ### Realidad aumentada
 
-Opcional y solo donde existe: WebXR `immersive-ar` en Android (Chrome con ARCore) y AR Quick Look en iPhone (archivo USDZ generado en el momento con el exportador de three.js). El botón no aparece si el dispositivo no la admite, y la cámara solo la pide el sistema al pulsarlo. No se pudo probar en un dispositivo real desde este entorno.
+Opcional y solo donde existe: WebXR `immersive-ar` en Android (Chrome con ARCore) y AR Quick Look en iPhone (archivo USDZ generado en el momento con el exportador de three.js). El botón no aparece si el dispositivo no la admite, y la cámara solo la pide el sistema al pulsarlo.
+
+- **Tamaño a la escala del recorrido.** En AR cada cuerpo mide lo que mediría con la escala del camino (1 UA = 2 km): el Sol 18,6 m, Júpiter 1,9 m, Saturno 1,6 m (3,8 m con anillos), Urano 68 cm, la Tierra 17 cm, Venus 16 cm, Marte 9 cm y Mercurio 6,5 cm. Lo calcula `arPlacement` (`src/components/planet/ar.ts`) con `sizeAtScaleMeters`; hay pruebas unitarias en `tests/unit/ar.test.ts`.
+- **Distancia y altura.** El cuerpo se ancla a una distancia de 3,6 veces su radio (con anillos) para que quepa en la pantalla en vertical: el Sol a unos 34 m, Mercurio a medio metro. Los cuerpos grandes se elevan para no quedar enterrados. La capa de AR muestra el diámetro y la distancia.
+- **Anclaje.** Se usa solo el giro horizontal del teléfono (al pulsar el botón se suele mirar la pantalla, hacia abajo) y se espera a tener una postura de seguimiento válida. Después el cuerpo queda fijo en el mundo.
+- **Sol con textura.** Sobre la imagen de la cámara, clara y sin mapeo de tonos, el material del visualizador se veía como un disco de un color. En AR el Sol usa un material propio (`createSunArMaterial`): granulación, manchas solares con zonas brillantes alrededor, oscurecimiento del borde y una corona calculada por rayo (`createCoronaMaterial`), que no depende de «sprites» ni del búfer de profundidad. Su ruido no usa `sin()`, que pierde precisión en algunas GPU de teléfonos. Sigue siendo una representación artística.
+- **Planetas.** Textura de mayor resolución cuando el cuerpo es grande, relieve donde existe y nubes en la Tierra.
+- **iPhone.** AR Quick Look no admite shaders (el Sol lleva una textura horneada) ni deja elegir la distancia: coloca el modelo junto al visitante. Por eso allí el Sol se reduce a la décima parte (1,86 m); los planetas van a escala.
+
+Probado en Android por el autor del proyecto (anclaje); el material nuevo del Sol y los tamaños a escala se verificaron con capturas y pruebas unitarias, no en un dispositivo. AR Quick Look sigue sin probarse en un iPhone.
+
+### Diseño visual («Noche andina»)
+
+Pensado para teléfono y tablet, al aire libre:
+
+- Cielo nocturno azul profundo con estrellas tenues; cada estación tiñe su página con el color de su astro (variable CSS `--body`).
+- La estación siguiente se dibuja como una señal informativa de carretera (verde con filete blanco): es la señalética del recorrido.
+- Portada con una ilustración del Sol en San Carlos, el camino y la cordillera, con las estaciones en su fracción real del trazado.
+- Texto base de 17 px (18 px en tablet), secundarios de al menos 14 px y controles de 44 px o más.
+- Teléfono: barra inferior con el modo activo marcado. Tablet: la barra pasa a ser un muelle flotante; en horizontal, la estación muestra el modelo 3D fijo a la izquierda y el contenido a la derecha, y la portada pone el camino junto a los modos.
+- El mapa aísla sus capas (`isolation: isolate`) para no tapar la barra de modos.

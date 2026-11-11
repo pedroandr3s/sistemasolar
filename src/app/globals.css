@@ -2,33 +2,48 @@
 
 /*
  * Sistema de diseño «Noche andina».
- * Fondo: el azul profundo del cielo nocturno de Ñuble (no un negro neutro).
- * Acento solar ámbar para acciones principales; verde álamo para estados
- * verificados y progreso; coral para errores.
- * Tipografía: Barlow, inspirada en la señalética vial: el recorrido es una ruta.
+ *
+ * La experiencia ocurre al aire libre, en un camino de Ñuble, casi siempre en un
+ * teléfono o una tablet. De ahí salen las decisiones:
+ * - Fondo: el azul profundo del cielo nocturno de la zona, con un polvo de estrellas tenue.
+ * - Acento solar ámbar para la acción principal; verde álamo para lo verificado y el
+ *   progreso; coral para errores.
+ * - Cada estación tiñe su página con el color de su astro (variable --body).
+ * - Lo que es señalética del camino (estación siguiente, kilómetros) se dibuja como
+ *   una señal informativa de carretera: verde con filete blanco.
+ * - Tipografía Barlow, nacida de la señalética vial de California: el recorrido es una ruta.
+ * - Texto grande, contraste alto y objetivos táctiles amplios: se lee a pleno sol.
  */
 
 @theme {
-  --color-night: #0f1830;
-  --color-night-2: #16213f;
-  --color-night-3: #22305a;
-  --color-snow: #eef2f7;
-  --color-mist: #a7b2c9;
-  --color-dim: #8590ab;
-  --color-sol: #f4b860;
-  --color-alamo: #9cc9a1;
-  --color-coral: #f2907a;
+  --color-night: #0b1226;
+  --color-night-2: #121b36;
+  --color-night-3: #1b274c;
+  --color-snow: #f3f6fb;
+  --color-mist: #bac4da;
+  --color-dim: #94a0bc;
+  --color-sol: #f7ba5c;
+  --color-alamo: #9fd0a6;
+  --color-coral: #f59a85;
+  --color-senal: #14624a;
   --font-sans: var(--font-barlow), system-ui, sans-serif;
   --font-display: var(--font-barlow-condensed), var(--font-barlow), system-ui, sans-serif;
 }
 
 :root {
-  --line: rgb(167 178 201 / 0.16);
-  --line-strong: rgb(167 178 201 / 0.32);
-  --nav-h: 64px;
-  --radius-s: 8px;
-  --radius-m: 14px;
+  --line: rgb(186 196 218 / 0.14);
+  --line-strong: rgb(186 196 218 / 0.3);
+  --surface: rgb(255 255 255 / 0.045);
+  --surface-2: rgb(255 255 255 / 0.08);
+  --nav-h: 66px;
+  --gutter: 20px;
+  --radius-s: 10px;
+  --radius-m: 18px;
+  --radius-l: 26px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 12px 28px -18px rgb(0 0 0 / 0.7);
+  /* Color del astro de la estación; fuera de una estación, el del Sol. */
+  --body: var(--color-sol);
   color-scheme: dark;
 }
 
@@ -42,15 +57,49 @@ html {
 }
 
 body {
+  position: relative;
   margin: 0;
   min-height: 100svh;
-  background: radial-gradient(120% 60% at 50% -10%, #1b2a52 0%, var(--color-night) 55%) fixed;
+  /* Transparente: el cielo se pinta en body::before, sobre el fondo de <html>. */
+  background: transparent;
   color: var(--color-snow);
   font-family: var(--font-sans);
   font-size: 17px;
-  line-height: 1.5;
+  line-height: 1.55;
   font-feature-settings: "kern", "liga";
   text-rendering: optimizeLegibility;
+}
+
+/* Cielo: resplandor del color del astro arriba y estrellas tenues. Va en una capa fija
+   propia (más fluido en teléfonos que background-attachment: fixed). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(110% 46% at 50% -8%, color-mix(in srgb, var(--body) 15%, transparent) 0%, transparent 70%),
+    radial-gradient(1.2px 1.2px at 12% 18%, rgb(255 255 255 / 0.7) 50%, transparent 51%),
+    radial-gradient(1px 1px at 31% 62%, rgb(255 255 255 / 0.5) 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 54% 28%, rgb(255 255 255 / 0.55) 50%, transparent 51%),
+    radial-gradient(1px 1px at 71% 81%, rgb(255 255 255 / 0.45) 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 88% 44%, rgb(255 255 255 / 0.6) 50%, transparent 51%),
+    radial-gradient(1px 1px at 44% 92%, rgb(255 255 255 / 0.4) 50%, transparent 51%),
+    radial-gradient(1px 1px at 5% 76%, rgb(255 255 255 / 0.45) 50%, transparent 51%),
+    radial-gradient(1px 1px at 79% 9%, rgb(255 255 255 / 0.5) 50%, transparent 51%),
+    linear-gradient(180deg, #101a37 0%, var(--color-night) 46%);
+  background-size:
+    100% 100%,
+    340px 340px,
+    340px 340px,
+    340px 340px,
+    340px 340px,
+    340px 340px,
+    340px 340px,
+    340px 340px,
+    340px 340px,
+    100% 100%;
 }
 
 :focus-visible {
@@ -61,6 +110,15 @@ body {
 
 a {
   color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
 }
 
 .skip-link {
@@ -98,30 +156,30 @@ a {
 .display {
   font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 0.95;
+  letter-spacing: -0.012em;
+  line-height: 0.94;
 }
 
 .wrap {
   width: 100%;
   max-width: 44rem;
   margin-inline: auto;
-  padding-inline: 18px;
+  padding-inline: var(--gutter);
 }
 
 .wrap-wide {
   width: 100%;
   max-width: 72rem;
   margin-inline: auto;
-  padding-inline: 18px;
+  padding-inline: var(--gutter);
 }
 
 .prose-block p + p {
-  margin-top: 0.85em;
+  margin-top: 0.9em;
 }
 
 .lead {
-  font-size: 1.18rem;
+  font-size: 1.2rem;
   line-height: 1.45;
   color: var(--color-snow);
 }
@@ -131,8 +189,18 @@ a {
 }
 
 .small {
-  font-size: 0.875rem;
-  line-height: 1.4;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+/* Título de página de los modos generales (Orientarme, Mapa, Bitácora…). */
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.3rem, 9vw, 3.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  margin: 0;
 }
 
 /* ---------------------------------------------------------------- botones */
@@ -142,59 +210,79 @@ a {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
-  padding: 0 18px;
+  min-height: 50px;
+  padding: 0 20px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
-  background: transparent;
+  background: var(--surface);
   color: var(--color-snow);
   font: inherit;
   font-weight: 600;
   font-size: 1rem;
+  line-height: 1.15;
   text-decoration: none;
   cursor: pointer;
   transition:
     background-color 0.15s ease,
-    border-color 0.15s ease;
+    border-color 0.15s ease,
+    transform 0.08s ease;
 }
 .btn:hover {
-  background: rgb(238 242 247 / 0.06);
+  background: var(--surface-2);
+}
+.btn:active {
+  transform: scale(0.97);
 }
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .btn--primary {
-  background: var(--color-sol);
-  border-color: var(--color-sol);
-  color: #1d1406;
+  background: linear-gradient(180deg, #fbc974 0%, var(--color-sol) 100%);
+  border-color: transparent;
+  color: #20160a;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.45) inset,
+    0 10px 24px -12px rgb(247 186 92 / 0.75);
 }
 .btn--primary:hover {
-  background: #f8c97f;
+  background: linear-gradient(180deg, #fdd48d 0%, #f9c470 100%);
 }
 .btn--small {
-  min-height: 40px;
-  padding: 0 14px;
-  font-size: 0.94rem;
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 0.95rem;
 }
 .btn--block {
   width: 100%;
 }
 
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
-  background: rgb(15 24 48 / 0.72);
+  background: rgb(11 18 38 / 0.66);
   color: var(--color-snow);
   cursor: pointer;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  transition:
+    background-color 0.15s ease,
+    transform 0.08s ease;
 }
 .icon-btn:hover {
-  background: rgb(34 48 90 / 0.9);
+  background: rgb(27 39 76 / 0.92);
+}
+.icon-btn:active {
+  transform: scale(0.94);
 }
 .icon-btn[aria-pressed="true"] {
   border-color: var(--color-sol);
@@ -204,19 +292,26 @@ a {
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 0 14px;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 16px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
-  background: rgb(15 24 48 / 0.78);
+  background: rgb(11 18 38 / 0.7);
   color: var(--color-snow);
   font: inherit;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.08s ease;
+}
+.chip:active {
+  transform: scale(0.96);
 }
 .chip[aria-pressed="true"] {
   background: var(--color-snow);
@@ -227,7 +322,7 @@ a {
 .text-link {
   color: var(--color-snow);
   text-decoration: underline;
-  text-decoration-color: rgb(244 184 96 / 0.6);
+  text-decoration-color: rgb(247 186 92 / 0.65);
   text-underline-offset: 3px;
   text-decoration-thickness: 1.5px;
   /* En un elemento en línea, el relleno vertical amplía el área táctil sin mover el texto. */
@@ -246,7 +341,7 @@ a {
 .link-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 20px;
+  gap: 0 22px;
   margin-top: 4px;
 }
 
@@ -256,37 +351,56 @@ a {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  padding: 12px 14px;
-  border-radius: var(--radius-s);
-  background: rgb(244 184 96 / 0.1);
-  border-left: 3px solid var(--color-sol);
-  font-size: 0.95rem;
-  line-height: 1.4;
+  padding: 14px 16px;
+  border-radius: var(--radius-m);
+  background: rgb(247 186 92 / 0.1);
+  border: 1px solid rgb(247 186 92 / 0.28);
+  font-size: 0.97rem;
+  line-height: 1.45;
+}
+.notice > svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--color-sol);
 }
 .notice--error {
-  background: rgb(242 144 122 / 0.1);
-  border-left-color: var(--color-coral);
+  background: rgb(245 154 133 / 0.1);
+  border-color: rgb(245 154 133 / 0.35);
+}
+.notice--error > svg {
+  color: var(--color-coral);
 }
 .notice--ok {
-  background: rgb(156 201 161 / 0.1);
-  border-left-color: var(--color-alamo);
+  background: rgb(159 208 166 / 0.1);
+  border-color: rgb(159 208 166 / 0.32);
+}
+.notice--ok > svg {
+  color: var(--color-alamo);
 }
 .notice--info {
-  background: rgb(167 178 201 / 0.08);
-  border-left-color: var(--color-mist);
+  background: var(--surface);
+  border-color: var(--line);
+}
+.notice--info > svg {
+  color: var(--color-mist);
 }
 .notice--alert {
-  background: rgb(242 144 122 / 0.16);
-  border: 1px solid rgb(242 144 122 / 0.5);
-  border-left-width: 4px;
-  border-left-color: var(--color-coral);
+  background: rgb(245 154 133 / 0.16);
+  border: 1px solid rgb(245 154 133 / 0.55);
+}
+.notice--alert > svg {
+  color: var(--color-coral);
+}
+
+.notice + .notice {
+  margin-top: 10px;
 }
 
 .badge-status {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: var(--color-mist);
 }
@@ -314,9 +428,9 @@ a {
   z-index: 40;
   height: calc(var(--nav-h) + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
-  background: rgb(15 24 48 / 0.94);
+  background: rgb(11 18 38 / 0.9);
   border-top: 1px solid var(--line);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(14px) saturate(1.3);
 }
 .mode-nav ul {
   display: grid;
@@ -324,7 +438,7 @@ a {
   height: var(--nav-h);
   max-width: 40rem;
   margin: 0 auto;
-  padding: 0;
+  padding: 0 4px;
   list-style: none;
 }
 .mode-nav a {
@@ -333,31 +447,51 @@ a {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   height: 100%;
-  color: var(--color-mist);
+  color: var(--color-dim);
   text-decoration: none;
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   font-weight: 500;
   line-height: 1.1;
   text-align: center;
+  transition: color 0.15s ease;
+}
+.mode-nav a svg {
+  position: relative;
+  z-index: 1;
+}
+/* Modo activo: una pastilla ámbar tenue detrás del icono. */
+.mode-nav a::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 58px;
+  height: 31px;
+  margin-left: -29px;
+  border-radius: 999px;
+  background: rgb(247 186 92 / 0.18);
+  opacity: 0;
+  transform: scaleX(0.6);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 .mode-nav a[aria-current="page"] {
   color: var(--color-snow);
+  font-weight: 600;
+}
+.mode-nav a[aria-current="page"] svg {
+  color: var(--color-sol);
 }
 .mode-nav a[aria-current="page"]::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 28%;
-  right: 28%;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: var(--color-sol);
+  opacity: 1;
+  transform: none;
 }
 
 .with-nav {
-  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 24px);
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 32px);
 }
 
 .top-bar {
@@ -365,8 +499,8 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 18px;
-  font-size: 0.86rem;
+  padding: 4px var(--gutter) 0;
+  font-size: 0.88rem;
   color: var(--color-mist);
 }
 .top-bar a {
@@ -375,10 +509,21 @@ a {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   min-height: 44px;
   color: var(--color-snow);
   font-weight: 600;
+  letter-spacing: 0.005em;
+}
+/* El punto de la marca: un sol pequeño con su resplandor. */
+.brand__mark {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--color-sol);
+  box-shadow:
+    0 0 0 3px rgb(247 186 92 / 0.18),
+    0 0 12px rgb(247 186 92 / 0.7);
 }
 
 /* ----------------------------------------------------------- regla de ruta */
@@ -390,14 +535,14 @@ a {
   overflow: visible;
 }
 .ruler-wrap {
-  padding: 0 18px;
+  padding: 0 var(--gutter);
 }
 
 /* Regla del recorrido (RouteRuler) */
 .rr-ruler {
   position: relative;
-  padding: 22px 0 0;
-  font-size: 0.78rem;
+  padding: 24px 0 0;
+  font-size: 0.8rem;
   color: var(--color-mist);
 }
 
@@ -414,7 +559,7 @@ a {
   top: 6px;
   height: 2px;
   border-radius: 2px;
-  background: repeating-linear-gradient(90deg, rgb(238 242 247 / 0.55) 0 10px, rgb(238 242 247 / 0) 10px 16px);
+  background: repeating-linear-gradient(90deg, rgb(243 246 251 / 0.5) 0 10px, rgb(243 246 251 / 0) 10px 16px);
 }
 
 .rr-belt {
@@ -422,7 +567,7 @@ a {
   top: 3px;
   height: 8px;
   border-radius: 4px;
-  background: rgb(167 178 201 / 0.22);
+  background: rgb(186 196 218 / 0.22);
 }
 
 .rr-tick {
@@ -430,14 +575,14 @@ a {
   top: 12px;
   width: 1px;
   height: 6px;
-  background: rgb(167 178 201 / 0.5);
+  background: rgb(186 196 218 / 0.5);
 }
 .rr-tick span {
   position: absolute;
   top: 7px;
   left: 0;
   transform: translateX(-50%);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -458,16 +603,18 @@ a {
   margin-left: -7px;
   box-shadow:
     0 0 0 2px var(--color-night),
-    0 0 0 3.5px var(--color-snow);
+    0 0 0 3.5px var(--color-snow),
+    0 0 14px 4px color-mix(in srgb, var(--body) 60%, transparent);
   z-index: 2;
 }
 
 .rr-currentLabel {
   position: absolute;
-  bottom: 18px;
+  bottom: 19px;
   white-space: nowrap;
   color: var(--color-snow);
   font-weight: 600;
+  font-size: 0.84rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -480,7 +627,7 @@ a {
 /* Camino a escala (RouteRoad) */
 .road-road {
   position: relative;
-  margin: 8px 0 0;
+  margin: 12px 0 0;
 }
 
 .road-svg {
@@ -490,29 +637,31 @@ a {
 }
 
 .road-line {
-  stroke: rgb(238 242 247 / 0.5);
-  stroke-width: 2;
-  stroke-dasharray: 10 7;
+  stroke: rgb(243 246 251 / 0.55);
+  stroke-width: 2.5;
+  stroke-dasharray: 12 8;
+  stroke-linecap: round;
 }
 
 .road-belt {
-  fill: rgb(167 178 201 / 0.2);
+  fill: rgb(186 196 218 / 0.2);
 }
 
 .road-tick {
-  stroke: rgb(167 178 201 / 0.45);
+  stroke: rgb(186 196 218 / 0.45);
   stroke-width: 1.5;
 }
 
 .road-leader {
   fill: none;
-  stroke: rgb(167 178 201 / 0.35);
+  stroke: rgb(186 196 218 / 0.4);
   stroke-width: 1;
 }
 
 .road-dot {
   stroke: var(--color-night);
   stroke-width: 2;
+  filter: drop-shadow(0 0 5px currentColor);
 }
 
 .road-town,
@@ -522,7 +671,7 @@ a {
   margin: 0;
   font-weight: 600;
   color: var(--color-mist);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
 }
 
 .road-townEnd {
@@ -534,8 +683,8 @@ a {
   left: 64px;
   right: 0;
   margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.3;
+  font-size: 0.86rem;
+  line-height: 1.35;
   color: var(--color-dim);
   max-width: 22rem;
 }
@@ -544,24 +693,26 @@ a {
   position: absolute;
   right: 0;
   display: grid;
-  gap: 1px;
+  gap: 2px;
   padding: 4px 0;
   text-decoration: none;
 }
 
-.road-item:hover .road-name {
+.road-item:hover .road-name,
+.road-item:active .road-name {
   color: var(--color-sol);
 }
 
 .road-name {
   font-family: var(--font-display);
-  font-size: 1.65rem;
+  font-size: 1.9rem;
   font-weight: 600;
   line-height: 1;
+  transition: color 0.15s ease;
 }
 
 .road-km {
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   color: var(--color-mist);
 }
 
@@ -574,28 +725,124 @@ a {
 .road-andes {
   display: block;
   width: 100%;
-  height: 70px;
+  height: 78px;
   margin-top: 10px;
-  fill: #26355f;
+  fill: #223060;
 }
 
 .road-snow {
-  fill: rgb(238 242 247 / 0.75);
+  fill: rgb(243 246 251 / 0.8);
+}
+
+/* ------------------------------------------------------------------ inicio */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+/* Ilustración: el Sol en San Carlos y el camino que sube hacia la cordillera. */
+.hero__art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 430px;
+}
+.hero__text {
+  position: relative;
+  margin-top: -14px;
+}
+.hero__title {
+  font-size: clamp(3rem, 13.2vw, 5.6rem);
+  margin: 0;
+}
+.hero__lead {
+  margin: 18px 0 0;
+  max-width: 34rem;
+}
+.hero__actions {
+  margin-top: 24px;
+}
+.hero__hint {
+  margin: 16px 0 0;
+  max-width: 34rem;
+}
+
+/* Los cinco modos, como tarjetas que se pueden tocar completas. */
+.mode-cards {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mode-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 76px;
+  padding: 14px 16px;
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    transform 0.08s ease;
+}
+.mode-card:hover {
+  background: var(--surface-2);
+}
+.mode-card:active {
+  transform: scale(0.985);
+}
+.mode-card__icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgb(247 186 92 / 0.14);
+  color: var(--color-sol);
+}
+.mode-card__title {
+  display: block;
+  font-weight: 600;
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+.mode-card__text {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-mist);
+  font-size: 0.93rem;
+  line-height: 1.35;
+}
+.mode-card__arrow {
+  color: var(--color-dim);
 }
 
 /* ----------------------------------------------------------- estación */
 
 .stage {
   position: relative;
-  height: 50svh;
-  min-height: 290px;
-  max-height: 560px;
+  height: 52svh;
+  min-height: 300px;
+  max-height: 600px;
+  /* Resplandor del color del astro detrás del modelo 3D. */
+  background: radial-gradient(
+    62% 56% at 50% 46%,
+    color-mix(in srgb, var(--body) 20%, transparent) 0%,
+    transparent 72%
+  );
 }
 /* Vista orbital: más alta en el teléfono para distinguir los planetas interiores. */
 .stage--orbits {
   height: 64svh;
   min-height: 340px;
   max-height: 680px;
+  background: none;
 }
 .stage--expanded {
   position: fixed;
@@ -615,7 +862,7 @@ a {
   align-items: flex-end;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 10px 14px 12px;
   pointer-events: none;
 }
 .stage__overlay > * {
@@ -627,13 +874,16 @@ a {
   overflow-x: auto;
   scrollbar-width: none;
   padding-bottom: 2px;
+  /* Indica que la fila sigue hacia la derecha. */
+  mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  padding-right: 24px;
 }
 .stage__chips::-webkit-scrollbar {
   display: none;
 }
 .stage__zoom {
   position: absolute;
-  right: 12px;
+  right: 14px;
   top: 12px;
   display: flex;
   flex-direction: column;
@@ -651,22 +901,23 @@ a {
 }
 .stage__note {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 12px;
   max-width: 70%;
-  font-size: 0.8rem;
-  line-height: 1.3;
+  font-size: 0.84rem;
+  line-height: 1.35;
   color: var(--color-mist);
-  background: rgb(15 24 48 / 0.7);
-  padding: 6px 10px;
+  background: rgb(11 18 38 / 0.72);
+  padding: 7px 11px;
   border-radius: var(--radius-s);
+  backdrop-filter: blur(6px);
 }
 
 .planet-label {
   transform: translate(-50%, -100%);
-  padding: 4px 9px;
-  border-radius: 6px;
-  background: rgb(15 24 48 / 0.86);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgb(11 18 38 / 0.86);
   border: 1px solid var(--line-strong);
   color: var(--color-snow);
   font-family: var(--font-sans);
@@ -692,58 +943,107 @@ a {
   bottom: auto;
 }
 
+.station-head {
+  margin-top: 20px;
+}
 .planet-name {
-  font-size: clamp(3.4rem, 17vw, 6.5rem);
-  margin: 0;
+  font-size: clamp(4rem, 21vw, 7.5rem);
+  line-height: 0.86;
+  margin: 6px 0 0;
+  /* El nombre toma un matiz del color del astro. */
+  color: color-mix(in srgb, var(--body) 30%, var(--color-snow));
+}
+.station-head .lead {
+  margin: 14px 0 0;
 }
 
 .kind-line {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.92rem;
+  gap: 9px;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
   color: var(--color-mist);
 }
 .kind-line .dot {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
+  box-shadow: 0 0 10px 1px color-mix(in srgb, var(--body) 70%, transparent);
 }
 
 .section {
-  margin-top: 36px;
+  margin-top: 44px;
 }
 .section-title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.7rem;
-  line-height: 1.05;
-  margin: 0 0 12px;
+  font-size: 1.95rem;
+  line-height: 1.02;
+  letter-spacing: -0.005em;
+  margin: 0 0 14px;
+}
+
+/* Título de un apartado dentro de una página o de un nivel. */
+.section-title--sub {
+  font-size: 1.6rem;
 }
 
 .divider {
   border: 0;
   border-top: 1px solid var(--line);
-  margin: 28px 0;
+  margin: 36px 0 20px;
 }
 
-/* Tarjeta de la estación siguiente: una «señal de ruta». */
+/* Estación siguiente: una señal informativa de carretera (verde, filete blanco). */
+.next-block {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
 .next-sign {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 4px 14px;
   align-items: center;
-  padding: 14px 16px;
-  border-radius: var(--radius-m);
-  background: var(--color-night-2);
-  border: 1px solid var(--line);
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #187257 0%, var(--color-senal) 100%);
+  border: 4px solid var(--color-senal);
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 0.9),
+    0 14px 26px -18px rgb(0 0 0 / 0.8);
+  color: #fff;
   text-decoration: none;
+  transition: transform 0.08s ease;
+}
+.next-sign:active {
+  transform: scale(0.985);
+}
+.next-sign__name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+.next-sign__dot {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.85);
 }
 .next-sign__km {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 2.3rem;
   font-weight: 600;
   line-height: 1;
+}
+.next-sign .muted {
+  color: rgb(255 255 255 / 0.86);
 }
 
 /* Segmentado de niveles */
@@ -751,26 +1051,41 @@ a {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
-  padding: 4px;
+  padding: 5px;
   border-radius: 999px;
-  background: var(--color-night-2);
+  background: var(--surface);
   border: 1px solid var(--line);
 }
 .levels button {
-  min-height: 42px;
+  min-height: 46px;
+  padding: 0 6px;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: var(--color-mist);
   font: inherit;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.1;
+  white-space: nowrap;
   cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+@media (min-width: 420px) {
+  .levels button {
+    font-size: 0.98rem;
+  }
 }
 .levels button[aria-selected="true"],
 .levels button[aria-checked="true"] {
   background: var(--color-snow);
   color: var(--color-night);
+  box-shadow: 0 4px 14px -6px rgb(0 0 0 / 0.6);
+}
+.level-panel {
+  margin-top: 22px;
 }
 
 .facts {
@@ -780,31 +1095,56 @@ a {
 }
 .facts > div {
   display: grid;
-  grid-template-columns: minmax(8.5rem, 40%) 1fr;
-  gap: 12px;
-  padding: 10px 0;
+  grid-template-columns: minmax(8.5rem, 38%) 1fr;
+  gap: 14px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--line);
+}
+.facts > div:last-child {
+  border-bottom: 0;
 }
 .facts dt {
   color: var(--color-mist);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
 }
 .facts dd {
   margin: 0;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 .facts dd small {
   display: block;
   color: var(--color-mist);
-  font-size: 0.82rem;
+  font-size: 0.87rem;
+  font-weight: 400;
   margin-top: 2px;
 }
 
+/* La idea para recordar: la frase más importante de la estación, en grande. */
 .idea {
-  padding: 16px 18px;
+  position: relative;
+  margin-top: 22px;
+  padding: 18px 20px 20px;
   border-radius: var(--radius-m);
-  background: linear-gradient(135deg, rgb(244 184 96 / 0.14), rgb(244 184 96 / 0.03));
-  border: 1px solid rgb(244 184 96 / 0.28);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--body) 20%, transparent),
+    color-mix(in srgb, var(--body) 5%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--body) 38%, transparent);
+}
+.idea__label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-mist);
+}
+.idea__text {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.62rem;
+  line-height: 1.12;
 }
 
 /* Experiencia final (Urano): el viaje de la luz */
@@ -830,8 +1170,8 @@ a {
   background: var(--color-night-3);
 }
 .final-journey__light {
-  background: linear-gradient(90deg, rgb(244 184 96 / 0.35), var(--color-sol));
-  box-shadow: 0 0 10px rgb(244 184 96 / 0.6);
+  background: linear-gradient(90deg, rgb(247 186 92 / 0.35), var(--color-sol));
+  box-shadow: 0 0 10px rgb(247 186 92 / 0.6);
 }
 .final-journey__sun {
   position: absolute;
@@ -841,6 +1181,7 @@ a {
   height: 18px;
   border-radius: 50%;
   background: var(--color-sol);
+  box-shadow: 0 0 14px rgb(247 186 92 / 0.8);
 }
 .final-journey__stop {
   position: absolute;
@@ -851,12 +1192,16 @@ a {
   border-radius: 50%;
   background: var(--color-night);
   border: 2px solid var(--stop-color);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 /* Halo en vez de transform: scale, que también agrandaría el rótulo del planeta. */
 .final-journey__stop.is-reached {
   background: var(--stop-color);
-  box-shadow: 0 0 0 3px rgb(238 242 247 / 0.18), 0 0 10px var(--stop-color);
+  box-shadow:
+    0 0 0 3px rgb(243 246 251 / 0.18),
+    0 0 10px var(--stop-color);
 }
 .final-journey__label {
   position: absolute;
@@ -864,7 +1209,7 @@ a {
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--color-mist);
 }
 .final-journey__stop:last-child .final-journey__label {
@@ -896,26 +1241,45 @@ a {
   border-radius: 50%;
 }
 
-/* Preguntas */
+/* Preguntas que se abren */
 .qa {
-  border-top: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: background-color 0.15s ease;
+}
+.qa + .qa {
+  margin-top: 10px;
+}
+.qa[open] {
+  background: var(--surface-2);
 }
 .qa summary {
   list-style: none;
   cursor: pointer;
-  padding: 14px 0;
+  min-height: 56px;
+  padding: 14px 16px;
   font-weight: 600;
+  line-height: 1.3;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 .qa summary::-webkit-details-marker {
   display: none;
 }
 .qa summary::after {
   content: "+";
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgb(247 186 92 / 0.16);
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   line-height: 1;
   color: var(--color-sol);
 }
@@ -923,40 +1287,110 @@ a {
   content: "−";
 }
 .qa > div {
-  padding: 0 0 16px;
+  padding: 0 16px 18px;
 }
 
 /* Quiz */
+.quiz {
+  display: grid;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.quiz fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.quiz legend {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 0;
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 1.08rem;
+  line-height: 1.3;
+}
+/* Número de la pregunta: son tres, en orden. */
+.quiz__n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--body) 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--body) 50%, transparent);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+.quiz__options {
+  display: grid;
+  gap: 8px;
+}
+.quiz__feedback {
+  margin: 12px 0 0;
+}
 .quiz-option {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  min-height: 48px;
-  padding: 10px 14px;
-  border-radius: var(--radius-s);
+  min-height: 54px;
+  padding: 10px 16px;
+  border-radius: 14px;
   border: 1px solid var(--line-strong);
-  background: transparent;
+  background: var(--surface);
   color: var(--color-snow);
   font: inherit;
+  line-height: 1.3;
   text-align: left;
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.08s ease;
+}
+.quiz-option:not(:disabled):hover {
+  background: var(--surface-2);
+}
+.quiz-option:not(:disabled):active {
+  transform: scale(0.985);
+}
+.quiz-option:disabled {
+  cursor: default;
+}
+.quiz-option[data-state="idle"]:disabled {
+  opacity: 0.55;
 }
 .quiz-option[data-state="correct"] {
   border-color: var(--color-alamo);
-  background: rgb(156 201 161 / 0.12);
+  background: rgb(159 208 166 / 0.16);
+  font-weight: 600;
+}
+.quiz-option[data-state="correct"] svg {
+  color: var(--color-alamo);
 }
 .quiz-option[data-state="wrong"] {
   border-color: var(--color-coral);
-  background: rgb(242 144 122 / 0.1);
+  background: rgb(245 154 133 / 0.12);
+}
+.quiz-option[data-state="wrong"] svg {
+  color: var(--color-coral);
 }
 
 /* Paneles genéricos */
 .panel {
-  padding: 16px;
+  padding: 18px;
   border-radius: var(--radius-m);
-  background: var(--color-night-2);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.065), rgb(255 255 255 / 0.035));
   border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
 }
 
 select,
@@ -965,11 +1399,14 @@ input[type="range"] {
   font: inherit;
   color: var(--color-snow);
 }
+input[type="range"] {
+  accent-color: var(--color-sol);
+}
 .field {
   display: grid;
   gap: 6px;
   min-width: 0;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   color: var(--color-mist);
 }
 /* width + min-width: 0 evitan que un <select> con opciones largas o el selector de
@@ -978,24 +1415,116 @@ input[type="range"] {
 .field input[type="datetime-local"] {
   width: 100%;
   min-width: 0;
-  min-height: 46px;
-  padding: 0 12px;
-  border-radius: var(--radius-s);
+  min-height: 50px;
+  padding: 0 14px;
+  border-radius: 14px;
   border: 1px solid var(--line-strong);
   background: var(--color-night-2);
   color: var(--color-snow);
   font-size: 1rem;
 }
 
+/* Tablas de datos (distancias, viaje de la luz): filas amplias y legibles. */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.data-table th,
+.data-table td {
+  padding: 11px 8px 11px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: baseline;
+}
+.data-table thead th {
+  color: var(--color-mist);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+/* Tabla más ancha que la pantalla: se desliza, y un borde difuminado lo indica. */
+.table-scroll {
+  overflow-x: auto;
+  margin-right: calc(var(--gutter) * -1);
+  padding-right: var(--gutter);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent);
+}
+
+/* Bitácora */
+.log-progress {
+  display: flex;
+  gap: 6px;
+  margin-top: 18px;
+}
+.log-progress span {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--color-night-3);
+}
+.log-list {
+  display: grid;
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.log-item {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 14px;
+  padding: 12px 16px 16px;
+  border-radius: var(--radius-m);
+  border: 1px dashed var(--line-strong);
+}
+.log-item[data-done="true"] {
+  border: 1px solid color-mix(in srgb, var(--body) 40%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--body) 16%, transparent),
+    color-mix(in srgb, var(--body) 4%, transparent)
+  );
+}
+.log-item__badge {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: 4px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--line-strong);
+  color: var(--color-night);
+}
+.log-item[data-done="true"] .log-item__badge {
+  border: 0;
+  background: var(--body);
+  box-shadow: 0 0 16px -2px var(--body);
+}
+.log-item__name {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.55rem;
+  line-height: 1;
+  text-decoration: none;
+}
+
 /* Mapa (Leaflet) */
 .map-shell {
   position: relative;
+  /* Encierra los z-index de Leaflet (hasta 1000): sin esto, el mapa quedaría por
+     encima de la barra de modos al deslizar la página. */
+  isolation: isolate;
   height: 58svh;
   min-height: 320px;
-  border-bottom: 1px solid var(--line);
+  border-block: 1px solid var(--line);
 }
 .map-shell .leaflet-container {
-  background: #172347;
+  background: #14204a;
   font-family: var(--font-sans);
 }
 .leaflet-control-attribution {
@@ -1035,9 +1564,9 @@ input[type="range"] {
 }
 .station-marker__label {
   margin-top: 4px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgb(15 24 48 / 0.85);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(11 18 38 / 0.88);
   color: var(--color-snow);
   font-size: 12px;
   font-weight: 600;
@@ -1045,21 +1574,232 @@ input[type="range"] {
 }
 
 .map-shell .stage__note {
-  left: 56px;
+  left: 62px;
   z-index: 500;
 }
 
 /* Brújula */
 .compass {
   position: relative;
-  width: min(72vw, 300px);
+  width: min(74vw, 320px);
   aspect-ratio: 1;
   margin: 0 auto;
 }
 
-@media (min-width: 900px) {
+/* Realidad aumentada: textos sobre la imagen de la cámara. */
+.ar-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+}
+.ar-overlay[data-active="true"] {
+  display: block;
+}
+.ar-overlay__caption {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: 14px;
+  right: 14px;
+  display: grid;
+  gap: 2px;
+  max-width: 30rem;
+  margin-inline: auto;
+  padding: 12px 16px;
+  border-radius: var(--radius-m);
+  background: rgb(11 18 38 / 0.78);
+  border: 1px solid var(--line-strong);
+  color: var(--color-snow);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  backdrop-filter: blur(8px);
+}
+.ar-overlay__caption strong {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+.ar-overlay__actions {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(28px + var(--safe-bottom));
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------------------ tablet */
+
+@media (min-width: 700px) {
+  :root {
+    --gutter: 36px;
+    --nav-h: 70px;
+  }
+  body {
+    font-size: 18px;
+  }
+  .wrap {
+    max-width: 47rem;
+  }
+  .section {
+    margin-top: 56px;
+  }
+  .section-title {
+    font-size: 2.3rem;
+  }
+  .lead {
+    font-size: 1.28rem;
+  }
+
+  /* La barra de modos pasa a ser un muelle flotante centrado. */
+  .mode-nav {
+    inset-inline: 0;
+    bottom: calc(14px + var(--safe-bottom));
+    width: min(38rem, calc(100% - 48px));
+    height: var(--nav-h);
+    margin-inline: auto;
+    padding-bottom: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 24px;
+    background: rgb(18 27 54 / 0.88);
+    box-shadow: 0 22px 40px -18px rgb(0 0 0 / 0.85);
+  }
+  .mode-nav a {
+    font-size: 0.82rem;
+  }
+  .log-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .table-scroll {
+    mask-image: none;
+  }
+  .mode-nav a::before {
+    top: 8px;
+    width: 64px;
+    height: 33px;
+    margin-left: -32px;
+  }
+  .with-nav {
+    padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 56px);
+  }
+
+  .hero__text {
+    margin-top: -40px;
+  }
+  .hero__title {
+    max-width: 12em;
+  }
+
+  .mode-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .mode-card {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    padding: 18px;
+  }
+  .mode-card__arrow {
+    display: none;
+  }
+
   .stage {
-    height: 62vh;
+    height: 56svh;
+    max-height: 720px;
+  }
+  .stage__zoom {
+    right: 22px;
+    top: 18px;
+  }
+  .stage__overlay {
+    padding: 14px 22px 16px;
+  }
+  .stage__chips {
+    mask-image: none;
+    padding-right: 0;
+  }
+
+  .quiz__options {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .idea__text {
+    font-size: 1.9rem;
+  }
+  .next-sign {
+    padding: 20px 24px;
+  }
+  .next-sign__km {
+    font-size: 2.8rem;
+  }
+  .panel {
+    padding: 22px;
+  }
+}
+
+/* Inicio en tablet horizontal y pantallas anchas: el camino a la izquierda y,
+   a la derecha, los modos, que acompañan mientras se recorre el camino. */
+@media (min-width: 960px) {
+  .home-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 64px;
+    align-items: start;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .home-grid > .wrap {
+    max-width: none;
+    padding-inline: 0;
+  }
+  .home-grid__side {
+    position: sticky;
+    top: 12px;
+  }
+  .home-grid__side .mode-cards {
+    grid-template-columns: 1fr;
+  }
+  .home-grid__side .mode-card {
+    align-items: center;
+  }
+  .hero .wrap {
+    max-width: 72rem;
+  }
+}
+
+/* Estación en tablet horizontal: el modelo 3D queda fijo a la izquierda y el
+   contenido se lee a la derecha. */
+@media (min-width: 1000px) and (min-aspect-ratio: 11/10) {
+  .station-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+    align-items: start;
+    max-width: 96rem;
+    margin-inline: auto;
+  }
+  .station-grid__stage {
+    position: sticky;
+    top: 0;
+  }
+  .station-grid__stage .stage:not(.stage--expanded) {
+    height: calc(100svh - 190px);
+    min-height: 420px;
+    max-height: none;
+  }
+  .station-grid__body {
+    max-width: 40rem;
+    margin-inline: 0;
+  }
+  .station-grid__body .station-head {
+    margin-top: 8px;
+  }
+  .station-grid__body .quiz__options {
+    grid-template-columns: 1fr;
+  }
+  .planet-name {
+    font-size: clamp(5rem, 9.5vw, 8.5rem);
   }
 }
 
@@ -1085,9 +1825,13 @@ input[type="range"] {
     background: #fff !important;
     color: #000 !important;
   }
+  body::before {
+    display: none !important;
+  }
   .panel {
     background: #fff !important;
     border-color: #999 !important;
+    box-shadow: none !important;
     break-inside: avoid;
   }
   .muted,

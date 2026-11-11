@@ -76,7 +76,7 @@ export function OrientMode({ stationId }: { stationId?: string }) {
       </div>
       <VehicleWarning fix={geo.fix} />
 
-      <h1 className="display" style={{ fontSize: "2.4rem", margin: "18px 0 0" }}>
+      <h1 className="page-title" style={{ marginTop: 18 }}>
         Orientarme
       </h1>
       <p className="muted" style={{ marginTop: 4 }}>
@@ -116,12 +116,9 @@ export function OrientMode({ stationId }: { stationId?: string }) {
         </h2>
         {result ? (
           target ? (
-            <div className="next-sign" style={{ gridTemplateColumns: "1fr auto" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 600, fontSize: "1.2rem" }}>
-                <span
-                  aria-hidden="true"
-                  style={{ width: 14, height: 14, borderRadius: "50%", background: target.body.color }}
-                />
+            <div className="next-sign">
+              <span className="next-sign__name">
+                <span className="next-sign__dot" aria-hidden="true" style={{ background: target.body.color }} />
                 Siguiente: {target.station.name}
               </span>
               <span className="next-sign__km tabular">{formatDistance(result.alongRouteMetersToTarget ?? 0)}</span>
@@ -133,12 +130,9 @@ export function OrientMode({ stationId }: { stationId?: string }) {
             <p className="panel">No quedan estaciones en este sentido. ¡Completaste el recorrido!</p>
           )
         ) : qrNext ? (
-          <div className="next-sign" style={{ gridTemplateColumns: "1fr auto" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 600, fontSize: "1.2rem" }}>
-              <span
-                aria-hidden="true"
-                style={{ width: 14, height: 14, borderRadius: "50%", background: qrNext.body.color }}
-              />
+          <div className="next-sign">
+            <span className="next-sign__name">
+              <span className="next-sign__dot" aria-hidden="true" style={{ background: qrNext.body.color }} />
               Siguiente: {qrNext.station.name}
             </span>
             <span className="next-sign__km tabular">
@@ -161,7 +155,7 @@ export function OrientMode({ stationId }: { stationId?: string }) {
 
       {/* Ubicación */}
       <section className="section" aria-labelledby="ubicacion">
-        <h2 id="ubicacion" className="section-title" style={{ fontSize: "1.4rem" }}>
+        <h2 id="ubicacion" className="section-title section-title--sub">
           Tu posición
         </h2>
         {geo.status === "inactiva" ||
@@ -241,7 +235,7 @@ export function OrientMode({ stationId }: { stationId?: string }) {
 
       {/* Dirección */}
       <section className="section" aria-labelledby="direccion">
-        <h2 id="direccion" className="section-title" style={{ fontSize: "1.4rem" }}>
+        <h2 id="direccion" className="section-title section-title--sub">
           Hacia dónde queda
         </h2>
         <CompassDial

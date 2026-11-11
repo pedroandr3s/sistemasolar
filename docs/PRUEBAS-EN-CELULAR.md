@@ -76,6 +76,15 @@ Haz la prueba en **Chrome para Android** y en **Safari para iPhone**. Anota los 
 7. Gira el teléfono a horizontal y vuelve a vertical.
 8. Con la versión de producción por https: visita algunas estaciones, activa el modo avión y vuelve a abrirlas (deben cargar desde la caché; el mapa base no).
 
+### Realidad aumentada (Android con ARCore, método B)
+
+En un lugar abierto, abre una estación y pulsa «Realidad aumentada». Comprueba:
+
+- El cuerpo aparece al frente y **queda fijo** al girar o caminar.
+- El rótulo superior indica su diámetro y distancia (el Sol: 18,6 m, a unos 34 m; la Tierra: 17 cm, a unos 60 cm).
+- El Sol muestra manchas, granulación y corona, no un disco de un color.
+- Júpiter (1,9 m) y Saturno con sus anillos (3,8 m) caben completos en la pantalla.
+
 ## Si un permiso quedó bloqueado
 
 - **iPhone (ubicación)**: Ajustes → Privacidad y seguridad → Localización → Sitios web de Safari → «Al usar la app». Para volver a ver la pregunta de un sitio: Ajustes → Safari → Avanzado → Datos de sitios web → borra el sitio.
