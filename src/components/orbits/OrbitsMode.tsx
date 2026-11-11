@@ -99,9 +99,7 @@ export function OrbitsMode({ initialSelected }: { initialSelected?: PlanetId | n
   return (
     <div>
       <div className="wrap" style={{ paddingTop: 14 }}>
-        <h1 className="page-title">
-          Dónde están los planetas
-        </h1>
+        <h1 className="page-title">Dónde están los planetas</h1>
         <p style={{ margin: "6px 0 0", fontWeight: 600 }} className="tabular" aria-live="polite">
           {formatChileDateTime(date)}
         </p>
@@ -139,33 +137,30 @@ export function OrbitsMode({ initialSelected }: { initialSelected?: PlanetId | n
             />
           </ErrorBoundary>
         )}
-        <div className="stage__zoom" data-label-avoid>
+        <div className="stage__tools stage__tools--top" data-label-avoid>
           <button
             type="button"
-            className="icon-btn"
-            aria-label="Vista superior"
-            title="Vista superior"
+            className="tool-btn"
             onClick={() => setView((v) => ({ seq: v.seq + 1, kind: "superior" }))}
           >
-            <Icon name="orbits" />
+            <Icon name="orbits" size={20} />
+            De arriba
           </button>
           <button
             type="button"
-            className="icon-btn"
-            aria-label="Vista oblicua"
-            title="Vista oblicua"
+            className="tool-btn"
             onClick={() => setView((v) => ({ seq: v.seq + 1, kind: "oblicua" }))}
           >
-            <Icon name="eye" />
+            <Icon name="eye" size={20} />
+            De lado
           </button>
           <button
             type="button"
-            className="icon-btn"
-            aria-label="Restablecer la vista"
-            title="Restablecer"
+            className="tool-btn"
             onClick={() => setView((v) => ({ seq: v.seq + 1, kind: "inicio" }))}
           >
-            <Icon name="reset" />
+            <Icon name="reset" size={20} />
+            Reiniciar
           </button>
         </div>
       </div>
@@ -180,8 +175,9 @@ export function OrbitsMode({ initialSelected }: { initialSelected?: PlanetId | n
         </p>
 
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 12 }}>
-          <button type="button" className="icon-btn" aria-label="Retroceder un paso" onClick={() => step(-1)}>
-            <Icon name="step-back" />
+          <button type="button" className="btn btn--small" aria-label="Retroceder un paso" onClick={() => step(-1)}>
+            <Icon name="step-back" size={18} />
+            Atrás
           </button>
           <button
             type="button"
@@ -193,8 +189,9 @@ export function OrbitsMode({ initialSelected }: { initialSelected?: PlanetId | n
             <Icon name={playing ? "pause" : "play"} size={18} />
             {playing ? "Pausar" : "Reproducir"}
           </button>
-          <button type="button" className="icon-btn" aria-label="Avanzar un paso" onClick={() => step(1)}>
-            <Icon name="step-forward" />
+          <button type="button" className="btn btn--small" aria-label="Avanzar un paso" onClick={() => step(1)}>
+            Adelante
+            <Icon name="step-forward" size={18} />
           </button>
           <button
             type="button"

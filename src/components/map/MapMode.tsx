@@ -289,7 +289,7 @@ export function MapMode({ stationId }: { stationId?: string }) {
                             display: "inline-flex",
                             gap: 8,
                             alignItems: "center",
-                            minHeight: 44,
+                            minHeight: 48,
                           }}
                         >
                           <span
