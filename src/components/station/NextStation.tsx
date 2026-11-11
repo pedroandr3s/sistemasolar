@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { stationPath } from "@/config/site";
-import { formatDistance } from "@/lib/format";
-import { legDistances, type StationPlacement } from "@/lib/stations";
+import type { StationPlacement } from "@/lib/stations";
 import { kmToModelMeters, SCALE } from "@/config/scale";
 import { formatNumber } from "@/lib/format";
 import { FinalJourney } from "./FinalJourney";
@@ -12,7 +11,11 @@ const NEPTUNE_MEAN_DISTANCE_KM = 4515.0e6;
 /** Próxima Centauri: 4,2465 años luz ≈ 268.557 UA (NASA). */
 const PROXIMA_AU = 268_557;
 
-/** Acceso a la estación siguiente, con la distancia por la ruta. */
+/**
+ * Enlaces de apoyo: cómo llegar a la parada siguiente y volver a la anterior.
+ * El paso principal («Siguiente») es el botón fijo de NextBar. En la última parada
+ * muestra el cierre del recorrido.
+ */
 export function NextStation({
   current,
   next,
@@ -41,7 +44,7 @@ export function NextStation({
           {previous && (
             <Link className="btn btn--small" href={stationPath(previous.station.id)}>
               <Icon name="arrow-left" size={18} />
-              {previous.station.name}
+              Volver a {previous.station.name}
             </Link>
           )}
         </div>
@@ -49,35 +52,18 @@ export function NextStation({
     );
   }
 
-  const leg = legDistances(current, next);
-  const km = leg.alongRouteMeters ?? leg.modelMeters;
-  const proposed = next.status !== "verificada";
-
   return (
-    <div className="next-block">
-      <Link className="next-sign" href={stationPath(next.station.id)}>
-        <span className="next-sign__name">
-          <span className="next-sign__dot" aria-hidden="true" style={{ background: next.body.color }} />
-          Siguiente: {next.station.name}
-        </span>
-        <span className="next-sign__km tabular">{formatDistance(km)}</span>
-        <span className="small muted">
-          por la ruta hacia San Fabián{proposed ? " (distancia según la escala; ubicación por confirmar)" : ""}
-        </span>
-        <Icon name="arrow-right" />
+    <div className="btn-row">
+      <Link className="btn btn--small" href={`${stationPath(current.station.id)}/orientarme`}>
+        <Icon name="compass" size={18} />
+        Cómo llegar a {next.station.name}
       </Link>
-      <div className="btn-row">
-        <Link className="btn btn--small" href={`${stationPath(current.station.id)}/orientarme`}>
-          <Icon name="compass" size={18} />
-          Cómo llegar
+      {previous && (
+        <Link className="btn btn--small" href={stationPath(previous.station.id)}>
+          <Icon name="arrow-left" size={18} />
+          Volver a {previous.station.name}
         </Link>
-        {previous && (
-          <Link className="btn btn--small" href={stationPath(previous.station.id)}>
-            <Icon name="arrow-left" size={18} />
-            {previous.station.name}
-          </Link>
-        )}
-      </div>
+      )}
     </div>
   );
 }

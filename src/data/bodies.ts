@@ -161,7 +161,7 @@ export const BODIES: Record<BodyId, Body> = {
     moons: null,
     hasRings: false,
     dataSource: "nasa-sun-factsheet",
-    hook: "Una estrella común en la galaxia, pero tan grande que cabrían en ella más de un millón de Tierras.",
+    hook: "Una estrella tan grande que caben más de un millón de Tierras.",
     keyIdea: "El Sol es una estrella y concentra casi toda la masa del sistema solar.",
     discover: [
       "El Sol es una estrella: una enorme esfera de gas muy caliente que produce su propia luz.",
@@ -259,7 +259,7 @@ export const BODIES: Record<BodyId, Body> = {
     moons: { count: 0, ...MOONS_FS },
     hasRings: false,
     dataSource: "nasa-planet-factsheet",
-    hook: "El planeta más pequeño y el más cercano al Sol: allí un año dura solo 88 días.",
+    hook: "El planeta más pequeño: su año dura solo 88 días.",
     keyIdea: "Sin atmósfera que guarde el calor, Mercurio pasa del calor extremo al frío extremo.",
     discover: [
       "Mercurio es un poco más grande que nuestra Luna.",
@@ -445,7 +445,7 @@ export const BODIES: Record<BodyId, Body> = {
     moons: { count: 1, ...MOONS_FS },
     hasRings: false,
     dataSource: "nasa-planet-factsheet",
-    hook: "El único lugar donde sabemos que hay vida. Tú estás aquí, en Ñuble.",
+    hook: "El único lugar donde sabemos que hay vida. Tú estás aquí.",
     keyIdea: "La inclinación del eje de la Tierra produce las estaciones del año.",
     discover: [
       "La Tierra es el tercer planeta desde el Sol y el único donde sabemos que existe vida.",
@@ -544,7 +544,7 @@ export const BODIES: Record<BodyId, Body> = {
     moons: { count: 2, ...MOONS_FS },
     hasRings: false,
     dataSource: "nasa-planet-factsheet",
-    hook: "El planeta rojo: su color viene del óxido de hierro, como la herrumbre de una herramienta vieja.",
+    hook: "El planeta rojo: su color es óxido, como una herramienta vieja.",
     keyIdea: "Marte fue más húmedo en el pasado; hoy es un desierto frío con atmósfera muy delgada.",
     discover: [
       "Marte es rojizo porque su suelo tiene mucho óxido de hierro.",
@@ -640,7 +640,7 @@ export const BODIES: Record<BodyId, Body> = {
     moons: { count: 115, asOf: "2026-09", source: "nasa-jupiter-moons" },
     hasRings: true,
     dataSource: "nasa-planet-factsheet",
-    hook: "El gigante del sistema solar: dentro de él cabrían más de 1.300 Tierras.",
+    hook: "El gigante: dentro de él cabrían más de 1.300 Tierras.",
     keyIdea: "Júpiter es tan grande que tiene más del doble de la masa de todos los demás planetas juntos.",
     discover: [
       "Júpiter es el planeta más grande. Es una bola gigantesca de gas, sin suelo donde pararse.",
@@ -734,7 +734,7 @@ export const BODIES: Record<BodyId, Body> = {
     moons: { count: 293, asOf: "2026-08", source: "nasa-saturn-moons" },
     hasRings: true,
     dataSource: "nasa-planet-factsheet",
-    hook: "Sus anillos parecen sólidos, pero son muchísimos trozos de hielo y roca girando a su alrededor.",
+    hook: "Sus anillos son incontables trozos de hielo y roca que giran.",
     keyIdea:
       "Los anillos de Saturno son enormes de ancho pero muy delgados, y están hechos de innumerables partículas.",
     discover: [

@@ -70,6 +70,8 @@ export function PlanetViewer({ body }: { body: Body }) {
   const [nudge, setNudge] = useState({ seq: 0, azimuth: 0, polar: 0 });
   const [texStatus, setTexStatus] = useState<TextureStatus>("cargando");
   const [earthNow, setEarthNow] = useState<EarthNow | null>(null);
+  /** La pista «gira con el dedo» se va con el primer toque o tecla sobre el modelo. */
+  const [touched, setTouched] = useState(false);
 
   const kind = body.render.special.kind;
   const rotating = rotatePref === "auto" ? !reduced && body.id !== "tierra" : rotatePref === "on";
@@ -124,9 +126,8 @@ export function PlanetViewer({ body }: { body: Body }) {
   }
 
   const realRotation = formatDurationHours(body.rotationPeriodHours);
+  // Notas de lo que se acaba de activar (se leen al momento).
   const notes: string[] = [];
-  if (rotating)
-    notes.push(`Giro acelerado: una vuelta cada ${body.render.spinSeconds} s. En la realidad tarda ${realRotation}.`);
   if (comparing)
     notes.push(
       body.id === "tierra"
@@ -135,18 +136,23 @@ export function PlanetViewer({ body }: { body: Body }) {
     );
   if (special && kind === "radar")
     notes.push("Bajo las nubes: mapa de radar de la sonda Magellan (NASA), en colores falsos.");
-  if (body.render.rings?.enhanced)
-    notes.push("Los anillos de Urano se realzaron para que se vean: en la realidad son casi negros.");
-  if (body.id === "tierra" && earthNow) {
+  if (body.id === "tierra" && earthNow && special) {
     notes.push(
       earthNow.day
-        ? `La luz y la sombra corresponden a este momento: ahora es de día en Ñuble (el Sol está a ${formatNumber(earthNow.sunElevationDeg, 0)}° sobre el horizonte).`
-        : `La luz y la sombra corresponden a este momento: ahora es de noche en Ñuble.`,
+        ? `La luz y la sombra son las de este momento: ahora es de día en Ñuble (el Sol está a ${formatNumber(earthNow.sunElevationDeg, 0)}° sobre el horizonte).`
+        : `La luz y la sombra son las de este momento: ahora es de noche en Ñuble.`,
     );
   }
+  // Aclaraciones permanentes sobre el modelo: van plegadas, para quien quiera leerlas.
+  const finePrint: string[] = [
+    `El giro está acelerado: una vuelta cada ${body.render.spinSeconds} s. En la realidad tarda ${realRotation}.`,
+  ];
+  if (body.id === "tierra") finePrint.push("La luz y la sombra de la Tierra corresponden a la hora actual.");
+  if (body.render.rings?.enhanced)
+    finePrint.push("Los anillos de Urano se realzaron para que se vean: en la realidad son casi negros.");
   if (body.render.artisticSurface && body.id !== "sol")
-    notes.push("Superficie: representación artística generada para este proyecto.");
-  if (body.id === "sol") notes.push("Superficie: representación visual animada, no una imagen real del Sol.");
+    finePrint.push("La superficie es una representación artística hecha para este proyecto.");
+  if (body.id === "sol") finePrint.push("La superficie es una representación animada, no una imagen real del Sol.");
 
   return (
     <div>
@@ -156,7 +162,11 @@ export function PlanetViewer({ body }: { body: Body }) {
         role="group"
         aria-roledescription="modelo 3D"
         aria-label={`Modelo 3D de ${body.nameInSentence}. Arrastra para girarlo o usa las flechas del teclado; más y menos para acercar.`}
-        onKeyDown={onStageKey}
+        onKeyDown={(e) => {
+          setTouched(true);
+          onStageKey(e);
+        }}
+        onPointerDown={() => setTouched(true)}
       >
         {webgl === null ? (
           <StageStatus>Preparando el modelo 3D…</StageStatus>
@@ -193,87 +203,85 @@ export function PlanetViewer({ body }: { body: Body }) {
 
         {webgl && webgl !== "ninguno" && (
           <>
-            <div className="stage__zoom" data-label-avoid>
-              <button
-                type="button"
-                className="icon-btn"
-                onClick={() => setZoom((z) => ({ seq: z.seq + 1, dir: 1 }))}
-                aria-label="Acercar"
-              >
-                <Icon name="plus" />
+            {!touched && (
+              <p className="drag-hint" aria-hidden="true">
+                <Icon name="hand" size={26} />
+                Gira con el dedo
+              </p>
+            )}
+            <div className="stage__tools" data-label-avoid>
+              <button type="button" className="tool-btn" onClick={() => setZoom((z) => ({ seq: z.seq + 1, dir: 1 }))}>
+                <Icon name="plus" size={20} />
+                Acercar
+              </button>
+              <button type="button" className="tool-btn" onClick={() => setZoom((z) => ({ seq: z.seq + 1, dir: -1 }))}>
+                <Icon name="minus" size={20} />
+                Alejar
+              </button>
+              <button type="button" className="tool-btn" onClick={() => setResetSeq((n) => n + 1)}>
+                <Icon name="reset" size={20} />
+                Reiniciar
               </button>
               <button
                 type="button"
-                className="icon-btn"
-                onClick={() => setZoom((z) => ({ seq: z.seq + 1, dir: -1 }))}
-                aria-label="Alejar"
-              >
-                <Icon name="minus" />
-              </button>
-              <button
-                type="button"
-                className="icon-btn"
-                onClick={() => setResetSeq((n) => n + 1)}
-                aria-label="Restablecer la vista"
-              >
-                <Icon name="reset" />
-              </button>
-              <button
-                type="button"
-                className="icon-btn"
+                className="tool-btn"
                 onClick={() => setExpanded((v) => !v)}
                 aria-pressed={expanded}
-                aria-label={expanded ? "Salir de la vista ampliada" : "Vista ampliada"}
+                aria-label={expanded ? "Achicar el modelo" : "Agrandar el modelo a pantalla completa"}
               >
-                <Icon name={expanded ? "collapse" : "expand"} />
+                <Icon name={expanded ? "collapse" : "expand"} size={20} />
+                {expanded ? "Achicar" : "Agrandar"}
               </button>
-            </div>
-
-            <div className="stage__overlay">
-              <div className="stage__chips">
-                <button
-                  type="button"
-                  className="chip"
-                  aria-pressed={special}
-                  onClick={toggleSpecial}
-                  style={special ? undefined : { borderColor: "var(--color-sol)", color: "var(--color-sol)" }}
-                >
-                  <Icon name="eye" size={18} />
-                  {body.render.special.label}
-                </button>
-                <button
-                  type="button"
-                  className="chip"
-                  aria-pressed={rotating}
-                  onClick={() => setRotatePref(rotating ? "off" : "on")}
-                >
-                  <Icon name={rotating ? "pause" : "play"} size={16} />
-                  {rotating ? "Pausar giro" : "Girar"}
-                </button>
-                <button type="button" className="chip" aria-pressed={labels} onClick={() => setLabels((v) => !v)}>
-                  <Icon name="tag" size={18} />
-                  Etiquetas
-                </button>
-                {showCompareChip && (
-                  <button type="button" className="chip" aria-pressed={compare} onClick={() => setCompare((v) => !v)}>
-                    {compareLabel}
-                  </button>
-                )}
-                <ArButton body={body} />
-              </div>
             </div>
           </>
         )}
       </div>
-      {notes.length > 0 && (
-        <div className="wrap" aria-live="polite">
+
+      <div className="wrap stage-actions">
+        <ArButton body={body} />
+        {webgl && webgl !== "ninguno" && (
+          <div className="chip-row" role="group" aria-label="Prueba con el modelo">
+            <button type="button" className="chip chip--accent" aria-pressed={special} onClick={toggleSpecial}>
+              <Icon name="eye" size={18} />
+              {body.render.special.label}
+            </button>
+            <button
+              type="button"
+              className="chip"
+              aria-pressed={rotating}
+              onClick={() => setRotatePref(rotating ? "off" : "on")}
+            >
+              <Icon name={rotating ? "pause" : "play"} size={16} />
+              {rotating ? "Pausar giro" : "Girar"}
+            </button>
+            <button type="button" className="chip" aria-pressed={labels} onClick={() => setLabels((v) => !v)}>
+              <Icon name="tag" size={18} />
+              Nombres
+            </button>
+            {showCompareChip && (
+              <button type="button" className="chip" aria-pressed={compare} onClick={() => setCompare((v) => !v)}>
+                <Icon name="ruler" size={18} />
+                {compareLabel}
+              </button>
+            )}
+          </div>
+        )}
+        <div aria-live="polite">
           {notes.map((n) => (
-            <p key={n} className="small muted" style={{ marginTop: 8 }}>
+            <p key={n} className="small muted stage-actions__note">
               {n}
             </p>
           ))}
         </div>
-      )}
+        <details className="fine-print">
+          <summary>Sobre este modelo 3D</summary>
+          <ul>
+            {finePrint.map((n) => (
+              <li key={n}>{n}</li>
+            ))}
+          </ul>
+        </details>
+      </div>
     </div>
   );
 }

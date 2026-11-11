@@ -28,9 +28,64 @@ export type IconName =
   | "step-back"
   | "step-forward"
   | "qr"
-  | "ar";
+  | "ar"
+  | "hand"
+  | "ruler"
+  | "calendar"
+  | "moon"
+  | "thermo"
+  | "sun"
+  | "flag"
+  | "star"
+  | "home";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  hand: (
+    <>
+      <path d="M9 11V4.8a1.6 1.6 0 0 1 3.2 0V10" />
+      <path d="M12.2 10V8.6a1.5 1.5 0 0 1 3 0V11" />
+      <path d="M15.2 11v-1a1.5 1.5 0 0 1 3 0v4.5c0 3.6-2.4 6-5.8 6-2.6 0-4-1.1-5.4-3.4l-2.2-3.7a1.5 1.5 0 0 1 2.5-1.6L9 14.5" />
+    </>
+  ),
+  ruler: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.5 12h17" />
+      <path d="m6.5 9.5-2.8 2.5 2.8 2.5M17.5 9.5l2.8 2.5-2.8 2.5" />
+    </>
+  ),
+  calendar: (
+    <>
+      <rect x="4" y="5.5" width="16" height="14.5" rx="2.5" />
+      <path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" />
+    </>
+  ),
+  moon: <path d="M19.5 14.2A8 8 0 0 1 9.8 4.5a8 8 0 1 0 9.7 9.7z" />,
+  thermo: (
+    <>
+      <path d="M10 13.6V5.5a2 2 0 0 1 4 0v8.1a4 4 0 1 1-4 0z" />
+      <path d="M12 9v7" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" />
+    </>
+  ),
+  flag: (
+    <>
+      <path d="M6 21V4" />
+      <path d="M6 5h11l-2.2 3.5L17 12H6" />
+    </>
+  ),
+  star: <path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z" />,
+  home: (
+    <>
+      <path d="m4 11 8-7 8 7" />
+      <path d="M6.5 9.5V20h11V9.5" />
+    </>
+  ),
   planet: (
     <>
       <circle cx="12" cy="12" r="5.5" />

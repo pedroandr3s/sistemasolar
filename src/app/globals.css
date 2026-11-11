@@ -52,6 +52,8 @@
 }
 
 html {
+  /* Al saltar a un elemento, que no quede bajo la barra inferior ni bajo «Siguiente». */
+  scroll-padding-bottom: calc(var(--nav-h) + 96px);
   background: var(--color-night);
   -webkit-text-size-adjust: 100%;
 }
@@ -249,12 +251,19 @@ p {
   background: linear-gradient(180deg, #fdd48d 0%, #f9c470 100%);
 }
 .btn--small {
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 16px;
   font-size: 0.95rem;
 }
 .btn--block {
   width: 100%;
+}
+/* La acción principal de una pantalla: más alta y con letra más grande. */
+.btn--big {
+  min-height: 58px;
+  padding: 0 22px;
+  font-size: 1.12rem;
+  gap: 10px;
 }
 
 .btn-row {
@@ -266,8 +275,8 @@ p {
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
   background: rgb(11 18 38 / 0.66);
@@ -293,8 +302,9 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 16px;
+  text-decoration: none;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
   background: rgb(11 18 38 / 0.7);
@@ -312,6 +322,16 @@ p {
 }
 .chip:active {
   transform: scale(0.96);
+}
+/* Acción propia del astro: contorno dorado para que destaque entre las demás. */
+.chip--accent {
+  border-color: var(--color-sol);
+  color: var(--color-sol);
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .chip[aria-pressed="true"] {
   background: var(--color-snow);
@@ -335,7 +355,7 @@ p {
 .text-link--block {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 48px;
   padding-block: 0;
 }
 .link-row {
@@ -434,7 +454,7 @@ p {
 }
 .mode-nav ul {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   height: var(--nav-h);
   max-width: 40rem;
   margin: 0 auto;
@@ -451,10 +471,11 @@ p {
   height: 100%;
   color: var(--color-dim);
   text-decoration: none;
-  font-size: 0.76rem;
+  font-size: 0.86rem;
   font-weight: 500;
   line-height: 1.1;
   text-align: center;
+  white-space: nowrap;
   transition: color 0.15s ease;
 }
 .mode-nav a svg {
@@ -510,7 +531,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  min-height: 44px;
+  min-height: 48px;
   color: var(--color-snow);
   font-weight: 600;
   letter-spacing: 0.005em;
@@ -745,22 +766,112 @@ p {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  max-height: 430px;
+  /* En teléfonos bajos la ilustración cede espacio: los dos botones deben verse sin deslizar. */
+  max-height: min(430px, 24svh);
 }
 .hero__text {
   position: relative;
   margin-top: -14px;
 }
 .hero__title {
-  font-size: clamp(3rem, 13.2vw, 5.6rem);
+  font-size: clamp(2.5rem, 11.5vw, 5.6rem);
   margin: 0;
 }
 .hero__lead {
-  margin: 18px 0 0;
+  margin: 12px 0 0;
   max-width: 34rem;
 }
 .hero__actions {
-  margin-top: 24px;
+  display: grid;
+  gap: 10px;
+  max-width: 26rem;
+  margin-top: 18px;
+}
+
+/* Cómo se juega: tres pasos, en orden. */
+.steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 14px;
+  font-size: 1.08rem;
+  line-height: 1.3;
+}
+.steps__n {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgb(247 186 92 / 0.16);
+  border: 1px solid rgb(247 186 92 / 0.45);
+  color: var(--color-sol);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+}
+
+/* Bloque que se abre con un botón claro («Quiero saber más», «Desafío»…). */
+.more {
+  margin-top: 12px;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.more > summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 10px 16px;
+  list-style: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.12rem;
+  line-height: 1.2;
+}
+.more > summary::-webkit-details-marker {
+  display: none;
+}
+.more > summary > svg {
+  color: var(--color-sol);
+}
+.more > summary small {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-mist);
+  font-size: 0.88rem;
+  font-weight: 400;
+}
+.more > summary::after {
+  content: "+";
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgb(247 186 92 / 0.16);
+  color: var(--color-sol);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.more[open] > summary::after {
+  content: "−";
+}
+.more[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.more__body {
+  padding: 18px 16px 20px;
 }
 .hero__hint {
   margin: 16px 0 0;
@@ -827,9 +938,8 @@ p {
 
 .stage {
   position: relative;
-  height: 52svh;
-  min-height: 300px;
-  max-height: 600px;
+  /* Deja a la vista, sin deslizar, el botón de realidad aumentada y el de «Siguiente». */
+  height: clamp(200px, 36svh, 460px);
   /* Resplandor del color del astro detrás del modelo 3D. */
   background: radial-gradient(
     62% 56% at 50% 46%,
@@ -889,6 +999,278 @@ p {
   flex-direction: column;
   gap: 8px;
 }
+/* Herramientas del modelo: icono y palabra, en una columna al borde (no tapan el planeta). */
+.stage__tools {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 2px;
+}
+/* En la vista orbital van arriba a la derecha: el centro es de los planetas. */
+.stage__tools--top {
+  top: 10px;
+  transform: none;
+}
+.stage--expanded .stage__tools {
+  right: 12px;
+  gap: 10px;
+}
+.tool-btn {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1px;
+  width: 60px;
+  min-height: 48px;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 12px;
+  background: rgb(11 18 38 / 0.55);
+  color: var(--color-snow);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.1;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.08s ease;
+}
+.tool-btn:hover {
+  background: rgb(27 39 76 / 0.9);
+}
+.tool-btn:active {
+  transform: scale(0.94);
+}
+.tool-btn[aria-pressed="true"] {
+  color: var(--color-sol);
+}
+/* Pista de que el modelo se gira con el dedo; desaparece al primer toque. */
+.drag-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 7px 14px 7px 10px;
+  border-radius: 999px;
+  background: rgb(11 18 38 / 0.78);
+  border: 1px solid var(--line-strong);
+  color: var(--color-snow);
+  font-size: 0.92rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.drag-hint svg {
+  color: var(--color-sol);
+  animation: drag-hint 1.8s ease-in-out infinite;
+}
+@keyframes drag-hint {
+  0%,
+  100% {
+    transform: translateX(-7px) rotate(-10deg);
+  }
+  50% {
+    transform: translateX(7px) rotate(10deg);
+  }
+}
+/* Debajo del modelo: realidad aumentada primero, luego las acciones para probar. */
+.stage-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+.stage-actions__note {
+  margin: 0;
+}
+.fine-print {
+  color: var(--color-mist);
+  font-size: 0.9rem;
+}
+.fine-print summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgb(247 186 92 / 0.6);
+  text-underline-offset: 3px;
+}
+.fine-print ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* Las ocho paradas: progreso visible y tocable. */
+.stops {
+  padding: 0 calc(var(--gutter) - 12px);
+}
+.stops ol {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stops__stop {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  min-height: 52px;
+  text-decoration: none;
+  color: var(--color-dim);
+  font-size: 0.68rem;
+  line-height: 1;
+}
+/* El camino que une las paradas. */
+.stops__stop::before {
+  content: "";
+  position: absolute;
+  top: 17px;
+  left: -50%;
+  width: 100%;
+  border-top: 2px dashed rgb(186 196 218 / 0.35);
+}
+.stops li:first-child .stops__stop::before {
+  display: none;
+}
+.stops__dot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin: 8px 0;
+  border-radius: 50%;
+  background: var(--color-night);
+  border: 2.5px solid var(--dot);
+}
+.stops__stop[data-visited="true"] .stops__dot {
+  background: var(--dot);
+}
+.stops__stop[aria-current="step"] {
+  color: var(--color-snow);
+  font-weight: 600;
+}
+.stops__stop[aria-current="step"] .stops__dot {
+  width: 30px;
+  height: 30px;
+  margin: 2px 0;
+  background: var(--dot);
+  border-color: var(--color-snow);
+  box-shadow: 0 0 14px 2px color-mix(in srgb, var(--dot) 70%, transparent);
+}
+.stops__name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tres datos a la vista. */
+.quick-facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.quick-facts li {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  padding: 12px 6px;
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  text-align: center;
+  font-size: 0.86rem;
+  line-height: 1.2;
+  color: var(--color-mist);
+}
+.quick-facts strong {
+  color: var(--color-snow);
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+.quick-facts__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--body) 22%, transparent);
+  color: color-mix(in srgb, var(--body) 55%, var(--color-snow));
+}
+
+/* «Siguiente»: señal de carretera fija sobre la barra inferior, siempre a la vista. */
+.next-bar {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: calc(var(--nav-h) + var(--safe-bottom) + 8px);
+  z-index: 39;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  max-width: 38rem;
+  margin-inline: auto;
+  padding: 8px 16px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #187257 0%, var(--color-senal) 100%);
+  border: 3px solid var(--color-senal);
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 0.9),
+    0 14px 30px -10px rgb(0 0 0 / 0.9);
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.08s ease;
+}
+.next-bar:active {
+  transform: scale(0.985);
+}
+.next-bar__dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9);
+}
+.next-bar__icon {
+  display: grid;
+}
+.next-bar__text {
+  display: grid;
+  line-height: 1.15;
+}
+.next-bar__text strong {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+.next-bar__text span {
+  font-size: 0.9rem;
+  color: rgb(255 255 255 / 0.9);
+}
+/* Espacio para que el botón fijo no tape el final de la página. */
+.station-grid {
+  padding-bottom: 78px;
+}
 .stage__status {
   position: absolute;
   inset: 0;
@@ -944,17 +1326,17 @@ p {
 }
 
 .station-head {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 .planet-name {
-  font-size: clamp(4rem, 21vw, 7.5rem);
-  line-height: 0.86;
-  margin: 6px 0 0;
+  font-size: clamp(2.8rem, 13vw, 5rem);
+  line-height: 0.9;
+  margin: 0;
   /* El nombre toma un matiz del color del astro. */
   color: color-mix(in srgb, var(--body) 30%, var(--color-snow));
 }
 .station-head .lead {
-  margin: 14px 0 0;
+  margin: 8px 0 0;
 }
 
 .kind-line {
@@ -1057,7 +1439,7 @@ p {
   border: 1px solid var(--line);
 }
 .levels button {
-  min-height: 46px;
+  min-height: 48px;
   padding: 0 6px;
   border: 0;
   border-radius: 999px;
@@ -1290,13 +1672,10 @@ p {
   padding: 0 16px 18px;
 }
 
-/* Quiz */
+/* Desafío: una pregunta por vez */
 .quiz {
   display: grid;
-  gap: 28px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 16px;
 }
 .quiz fieldset {
   border: 0;
@@ -1305,49 +1684,83 @@ p {
   min-width: 0;
 }
 .quiz legend {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
   padding: 0;
-  margin-bottom: 12px;
-  font-weight: 600;
-  font-size: 1.08rem;
-  line-height: 1.3;
-}
-/* Número de la pregunta: son tres, en orden. */
-.quiz__n {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  margin-top: -2px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--body) 24%, transparent);
-  border: 1px solid color-mix(in srgb, var(--body) 50%, transparent);
+  margin-bottom: 14px;
   font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+/* Tres marcas: hechas, actual y pendientes. */
+.quiz__count {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+}
+.quiz__count span {
+  width: 34px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-night-3);
+}
+.quiz__count span[data-state="done"] {
+  background: var(--color-alamo);
+}
+.quiz__count span[data-state="now"] {
+  background: var(--color-sol);
 }
 .quiz__options {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 .quiz__feedback {
-  margin: 12px 0 0;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgb(247 186 92 / 0.1);
+  border: 1px solid rgb(247 186 92 / 0.3);
+}
+.quiz__feedback[data-ok="true"] {
+  background: rgb(159 208 166 / 0.12);
+  border-color: rgb(159 208 166 / 0.4);
+}
+.quiz-result {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.quiz-result p {
+  margin: 0;
+}
+.quiz-result__stars {
+  display: flex;
+  gap: 6px;
+  color: var(--color-night-3);
+}
+.quiz-result__stars svg[data-on="true"] {
+  color: var(--color-sol);
+  fill: var(--color-sol);
+}
+.quiz-result__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.9rem;
+  line-height: 1.05;
 }
 .quiz-option {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  min-height: 54px;
+  min-height: 60px;
   padding: 10px 16px;
   border-radius: 14px;
-  border: 1px solid var(--line-strong);
+  border: 1.5px solid var(--line-strong);
   background: var(--surface);
+  font-size: 1.08rem;
   color: var(--color-snow);
-  font: inherit;
+  font-family: inherit;
   line-height: 1.3;
   text-align: left;
   cursor: pointer;
@@ -1505,7 +1918,7 @@ input[type="range"] {
 .log-item__name {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 48px;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 1.55rem;
@@ -1538,9 +1951,9 @@ input[type="range"] {
 /* Botones de zoom del mapa: 44 × 44 px (Leaflet usa 30 px en pantallas táctiles). */
 .map-shell .leaflet-touch .leaflet-bar a,
 .map-shell .leaflet-bar a {
-  width: 44px;
-  height: 44px;
-  line-height: 44px;
+  width: 48px;
+  height: 48px;
+  line-height: 48px;
   font-size: 24px;
 }
 .station-marker {
@@ -1630,6 +2043,156 @@ input[type="range"] {
   pointer-events: auto;
 }
 
+/* Invitación a abrir la realidad aumentada (página abierta con ?ar=1, desde un QR de AR). */
+.ar-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  padding: 16px 16px calc(16px + var(--safe-bottom));
+  background: rgb(5 9 20 / 0.72);
+  backdrop-filter: blur(6px);
+}
+.ar-prompt__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  color: var(--color-snow);
+  cursor: pointer;
+}
+.ar-prompt__card {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 26rem;
+  padding: 24px 20px 20px;
+  border-radius: var(--radius-l);
+  background: var(--color-night-2);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 30px 60px -20px rgb(0 0 0 / 0.9);
+}
+.ar-prompt__card p {
+  margin: 0;
+}
+.ar-prompt__disc {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  box-shadow:
+    inset -8px -8px 14px rgb(0 0 0 / 0.35),
+    0 0 26px -4px currentColor;
+}
+.ar-prompt__title {
+  padding-right: 44px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+/* Escáner de QR */
+.scanner {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  padding: 12px 12px calc(12px + var(--safe-bottom));
+  background: rgb(5 9 20 / 0.8);
+  backdrop-filter: blur(6px);
+  overflow-y: auto;
+}
+.scanner__card {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 28rem;
+  padding: 20px 16px 16px;
+  border-radius: var(--radius-l);
+  background: var(--color-night-2);
+  border: 1px solid var(--line-strong);
+}
+.scanner__card p {
+  margin: 0;
+}
+.scanner__title {
+  padding-right: 52px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.8rem;
+  line-height: 1.02;
+}
+.scanner__view {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  max-height: 46svh;
+  width: 100%;
+  border-radius: var(--radius-m);
+  background: #000;
+}
+.scanner__view video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.scanner__frame {
+  position: absolute;
+  inset: 16%;
+  border: 3px solid var(--color-sol);
+  border-radius: 18px;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.35);
+}
+.scanner__status {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgb(11 18 38 / 0.82);
+  font-size: 0.95rem;
+  text-align: center;
+}
+.scanner__or {
+  color: var(--color-mist);
+  font-size: 0.95rem;
+}
+.scanner__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.scanner__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.ar-prompt__error {
+  color: var(--color-coral);
+  font-weight: 500;
+}
+@media (min-width: 700px) {
+  .ar-prompt {
+    align-items: center;
+  }
+}
+
 /* ------------------------------------------------------------------ tablet */
 
 @media (min-width: 700px) {
@@ -1706,12 +2269,45 @@ input[type="range"] {
   }
 
   .stage {
-    height: 56svh;
-    max-height: 720px;
+    height: clamp(320px, 46svh, 640px);
   }
   .stage__zoom {
     right: 22px;
     top: 18px;
+  }
+  .stage__tools {
+    right: 18px;
+    gap: 8px;
+  }
+  .tool-btn {
+    width: 72px;
+    min-height: 56px;
+    font-size: 0.8rem;
+  }
+  .stops {
+    max-width: 47rem;
+    margin-inline: auto;
+  }
+  .stops__stop {
+    font-size: 0.8rem;
+  }
+  .next-bar {
+    bottom: calc(var(--nav-h) + var(--safe-bottom) + 26px);
+    width: min(38rem, calc(100% - 48px));
+  }
+  .station-grid {
+    padding-bottom: 96px;
+  }
+  .scanner,
+  .ar-prompt {
+    align-items: center;
+  }
+  .quick-facts strong {
+    font-size: 1.8rem;
+  }
+  .quick-facts li {
+    font-size: 0.95rem;
+    padding: 16px 10px;
   }
   .stage__overlay {
     padding: 14px 22px 16px;
@@ -1721,9 +2317,6 @@ input[type="range"] {
     padding-right: 0;
   }
 
-  .quiz__options {
-    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  }
   .idea__text {
     font-size: 1.9rem;
   }
@@ -1784,8 +2377,8 @@ input[type="range"] {
     top: 0;
   }
   .station-grid__stage .stage:not(.stage--expanded) {
-    height: calc(100svh - 190px);
-    min-height: 420px;
+    height: calc(100svh - 420px);
+    min-height: 300px;
     max-height: none;
   }
   .station-grid__body {
@@ -1795,11 +2388,11 @@ input[type="range"] {
   .station-grid__body .station-head {
     margin-top: 8px;
   }
-  .station-grid__body .quiz__options {
-    grid-template-columns: 1fr;
+  .station-grid__stage .planet-name {
+    padding-top: 8px;
   }
   .planet-name {
-    font-size: clamp(5rem, 9.5vw, 8.5rem);
+    font-size: clamp(4rem, 7vw, 6rem);
   }
 }
 

@@ -8,6 +8,10 @@ import { NextStation } from "@/components/station/NextStation";
 import { Quiz } from "@/components/station/Quiz";
 import { VisitRecorder } from "@/components/station/VisitRecorder";
 import { ScaleBlock } from "@/components/station/ScaleBlock";
+import { QuickFacts } from "@/components/station/QuickFacts";
+import { NextBar } from "@/components/station/NextBar";
+import { RouteRuler } from "@/components/route/RouteRuler";
+import { Icon } from "@/components/ui/Icon";
 import { SOURCES } from "@/data/sources";
 import { findPlacement, nextPlacement, previousPlacement } from "@/lib/stations";
 import { SAFETY_NOTICE } from "@/config/stations";
@@ -57,6 +61,7 @@ export default async function ExplorePage({ params }: PageProps<"/estacion/[id]"
       <VisitRecorder stationId={id} />
       <div className="station-grid">
         <div className="station-grid__stage">
+          <h1 className="display planet-name wrap">{body.name}</h1>
           <PlanetViewer body={body} />
         </div>
 
@@ -66,113 +71,153 @@ export default async function ExplorePage({ params }: PageProps<"/estacion/[id]"
               <span className="dot" style={{ background: body.color }} aria-hidden="true" />
               {kindLine}
             </p>
-            <h1 className="display planet-name">{body.name}</h1>
             <p className="lead">{body.hook}</p>
           </div>
 
-          <NextStation current={placement} next={next} previous={prev} />
+          <QuickFacts body={body} />
 
-          <section className="section" aria-labelledby="niveles">
-            <h2 id="niveles" className="sr-only">
-              Información sobre {body.name}
-            </h2>
-            <LevelTabs
-              panels={{
-                descubrir: (
-                  <div className="prose-block">
-                    {body.discover.map((t) => (
-                      <p key={t}>{t}</p>
-                    ))}
-                    <div className="idea">
-                      <p className="idea__label">Para recordar</p>
-                      <p className="idea__text">{body.keyIdea}</p>
-                    </div>
-                    <p style={{ marginTop: 20 }}>
-                      <strong>Para imaginarlo: </strong>
-                      {body.comparison}
-                    </p>
-                    <p>
-                      <strong>Curiosidad: </strong>
-                      {body.curiosity}
-                    </p>
-                  </div>
-                ),
-                entender: (
-                  <div className="prose-block">
-                    {body.understand.map((t) => (
-                      <p key={t}>{t}</p>
-                    ))}
-                    <ScaleBlock placement={placement} />
-                    <h3 className="section-title section-title--sub" style={{ marginTop: 30 }}>
-                      Datos clave
-                    </h3>
-                    <KeyFacts body={body} />
-                  </div>
-                ),
-                profundizar: (
-                  <div className="prose-block">
-                    {body.deep.map((t) => (
-                      <p key={t}>{t}</p>
-                    ))}
-                    {body.dataNotes.length > 0 && (
-                      <div className="notice notice--info" style={{ marginTop: 18 }}>
-                        <div>
-                          <p style={{ margin: 0, fontWeight: 600 }}>Sobre los datos y el modelo</p>
-                          <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
-                            {body.dataNotes.map((n) => (
-                              <li key={n}>{n}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-                    <p className="small muted" style={{ marginTop: 18 }}>
-                      Fuentes:{" "}
-                      {sources.map((s, i) => (
-                        <span key={s.id}>
-                          {i > 0 && "; "}
-                          <a className="text-link" href={s.url} target="_blank" rel="noopener noreferrer">
-                            {s.publisher}, {s.title}
-                          </a>
-                          {s.version ? ` (${s.version})` : ""}
-                        </span>
+          {!next && (
+            <section className="section" aria-label="Fin del recorrido">
+              <NextStation current={placement} next={next} previous={prev} />
+            </section>
+          )}
+
+          <details className="more">
+            <summary>
+              <Icon name="learn" size={24} />
+              <span>
+                Quiero saber más
+                <small>Curiosidades, datos y la escala</small>
+              </span>
+            </summary>
+            <div className="more__body">
+              <h2 className="sr-only">Información sobre {body.name}</h2>
+              <LevelTabs
+                panels={{
+                  descubrir: (
+                    <div className="prose-block">
+                      {body.discover.map((t) => (
+                        <p key={t}>{t}</p>
                       ))}
-                      .
-                    </p>
-                    <div className="link-row small">
-                      <Link className="text-link text-link--block" href="/fuentes">
-                        Métodos, licencias y todas las fuentes
-                      </Link>
+                      <div className="idea">
+                        <p className="idea__label">Para recordar</p>
+                        <p className="idea__text">{body.keyIdea}</p>
+                      </div>
+                      <p style={{ marginTop: 20 }}>
+                        <strong>Para imaginarlo: </strong>
+                        {body.comparison}
+                      </p>
+                      <p>
+                        <strong>Curiosidad: </strong>
+                        {body.curiosity}
+                      </p>
                     </div>
-                  </div>
-                ),
-              }}
-            />
-          </section>
+                  ),
+                  entender: (
+                    <div className="prose-block">
+                      {body.understand.map((t) => (
+                        <p key={t}>{t}</p>
+                      ))}
+                      <ScaleBlock placement={placement} />
+                      <h3 className="section-title section-title--sub" style={{ marginTop: 30 }}>
+                        Datos clave
+                      </h3>
+                      <KeyFacts body={body} />
+                    </div>
+                  ),
+                  profundizar: (
+                    <div className="prose-block">
+                      {body.deep.map((t) => (
+                        <p key={t}>{t}</p>
+                      ))}
+                      {body.dataNotes.length > 0 && (
+                        <div className="notice notice--info" style={{ marginTop: 18 }}>
+                          <div>
+                            <p style={{ margin: 0, fontWeight: 600 }}>Sobre los datos y el modelo</p>
+                            <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                              {body.dataNotes.map((n) => (
+                                <li key={n}>{n}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+                      <p className="small muted" style={{ marginTop: 18 }}>
+                        Fuentes:{" "}
+                        {sources.map((s, i) => (
+                          <span key={s.id}>
+                            {i > 0 && "; "}
+                            <a className="text-link" href={s.url} target="_blank" rel="noopener noreferrer">
+                              {s.publisher}, {s.title}
+                            </a>
+                            {s.version ? ` (${s.version})` : ""}
+                          </span>
+                        ))}
+                        .
+                      </p>
+                      <div className="link-row small">
+                        <Link className="text-link text-link--block" href="/fuentes">
+                          Métodos, licencias y todas las fuentes
+                        </Link>
+                      </div>
+                    </div>
+                  ),
+                }}
+              />
 
-          <section className="section" aria-labelledby="pregunta">
-            <h2 id="pregunta" className="section-title">
-              La pregunta de esta estación
-            </h2>
-            <details className="qa">
-              <summary>{body.stationQuestion.question}</summary>
-              <div>
-                <p style={{ margin: 0 }}>{body.stationQuestion.answer}</p>
+              <h3 className="section-title section-title--sub" style={{ marginTop: 34 }}>
+                La pregunta de esta parada
+              </h3>
+              <details className="qa">
+                <summary>{body.stationQuestion.question}</summary>
+                <div>
+                  <p style={{ margin: 0 }}>{body.stationQuestion.answer}</p>
+                </div>
+              </details>
+
+              <h3 className="section-title section-title--sub" style={{ marginTop: 34 }}>
+                Dónde estás en el camino
+              </h3>
+              <RouteRuler currentId={id} />
+              <p className="small muted" style={{ marginTop: 12 }}>
+                Las posiciones son teóricas: se calculan con la escala sobre el camino. El lugar definitivo de cada
+                escultura todavía no está decidido.
+              </p>
+              <div className="btn-row" style={{ marginTop: 14 }}>
+                <Link className="btn btn--small" href={`/estacion/${id}/sistema-solar`}>
+                  <Icon name="orbits" size={18} />
+                  Ver dónde están hoy los planetas
+                </Link>
               </div>
-            </details>
-          </section>
+            </div>
+          </details>
 
-          <section className="section" aria-labelledby="quiz">
-            <h2 id="quiz" className="section-title">
-              Tres preguntas rápidas
-            </h2>
-            <Quiz stationId={id} questions={body.quiz} />
-          </section>
+          <details className="more">
+            <summary>
+              <Icon name="star" size={24} />
+              <span>
+                Desafío
+                <small>Tres preguntas, de a una</small>
+              </span>
+            </summary>
+            <div className="more__body">
+              <h2 className="sr-only">Desafío de {body.name}</h2>
+              <Quiz stationId={id} questions={body.quiz} />
+            </div>
+          </details>
 
-          <hr className="divider" />
-          <p className="small muted">{SAFETY_NOTICE}</p>
+          {next && (
+            <div style={{ marginTop: 22 }}>
+              <NextStation current={placement} next={next} previous={prev} />
+            </div>
+          )}
+
+          <p className="small muted" style={{ marginTop: 26 }}>
+            {SAFETY_NOTICE}
+          </p>
         </div>
       </div>
+      <NextBar current={placement} next={next} />
     </>
   );
 }

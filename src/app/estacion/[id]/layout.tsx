@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ModeNav } from "@/components/shell/ModeNav";
-import { RouteRuler } from "@/components/route/RouteRuler";
+import { StationProgress } from "@/components/station/StationProgress";
 import { findPlacement, getPlacements, getStationIds } from "@/lib/stations";
 
 export const dynamicParams = false;
@@ -27,12 +27,10 @@ export default async function StationLayout({ children, params }: LayoutProps<"/
             Sistema solar a escala
           </Link>
           <span className="tabular">
-            Estación {placement.station.order + 1} de {total}
+            Parada {placement.station.order + 1} de {total}
           </span>
         </div>
-        <div className="ruler-wrap">
-          <RouteRuler currentId={id} />
-        </div>
+        <StationProgress currentId={id} />
       </header>
       <main id="contenido">{children}</main>
       <ModeNav stationId={id} />
