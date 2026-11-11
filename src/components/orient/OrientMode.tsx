@@ -116,21 +116,23 @@ export function OrientMode({ stationId }: { stationId?: string }) {
         </h2>
         {result ? (
           target ? (
-            <div className="next-sign">
+            <Link className="next-sign" href={stationPath(target.station.id)}>
               <span className="next-sign__name">
                 <span className="next-sign__dot" aria-hidden="true" style={{ background: target.body.color }} />
                 Siguiente: {target.station.name}
               </span>
               <span className="next-sign__km tabular">{formatDistance(result.alongRouteMetersToTarget ?? 0)}</span>
-              <span className="small muted" style={{ gridColumn: "1 / -1" }}>
-                por la ruta; {formatDistance(result.straightMetersToTarget ?? 0)} en línea recta
+              <span className="small muted">
+                por la ruta; {formatDistance(result.straightMetersToTarget ?? 0)} en línea recta. Toca para abrir{" "}
+                {target.station.name}.
               </span>
-            </div>
+              <Icon name="arrow-right" size={26} />
+            </Link>
           ) : (
             <p className="panel">No quedan estaciones en este sentido. ¡Completaste el recorrido!</p>
           )
         ) : qrNext ? (
-          <div className="next-sign">
+          <Link className="next-sign" href={stationPath(qrNext.station.id)}>
             <span className="next-sign__name">
               <span className="next-sign__dot" aria-hidden="true" style={{ background: qrNext.body.color }} />
               Siguiente: {qrNext.station.name}
@@ -138,12 +140,14 @@ export function OrientMode({ stationId }: { stationId?: string }) {
             <span className="next-sign__km tabular">
               {staticLeg?.alongRouteMeters != null ? formatDistance(staticLeg.alongRouteMeters) : "—"}
             </span>
-            <span className="small muted" style={{ gridColumn: "1 / -1" }}>
+            <span className="small muted">
               por la ruta desde {qrStation?.station.name}
               {staticBearing !== null &&
                 `, hacia el ${cardinalName(staticBearing)} en línea recta (rumbo ${bearingText(staticBearing)})`}
+              . Toca para abrir {qrNext.station.name}.
             </span>
-          </div>
+            <Icon name="arrow-right" size={26} />
+          </Link>
         ) : qrStation ? (
           <p className="panel">
             {direction === "hacia-san-fabian"
