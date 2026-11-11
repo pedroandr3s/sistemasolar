@@ -76,6 +76,16 @@ Las etiquetas sobre los planetas se dibujan en una capa HTML normal sobre el lie
 - Three.js solo se descarga en las páginas con 3D. La parte 3D de la realidad aumentada (`arSession.ts`) se carga solo al pulsar su botón; antes iba en el fragmento de cada estación y la precarga de enlaces la descargaba incluso en la portada.
 - Un service worker (solo en producción y con https) guarda páginas visitadas y texturas para zonas con mala cobertura. No guarda teselas del mapa. Las texturas se sirven desde la copia guardada y se revalidan en segundo plano (petición condicional), así una textura corregida llega en la visita siguiente.
 
+Optimización del modelo 3D en teléfonos (noviembre de 2026), tras notar que el Sol y Mercurio costaban en cargar y mostraban defectos:
+
+- **Sol.** Su superficie se calculaba en la GPU en cada píxel y cuadro (diez evaluaciones de ruido 3D, con un generador basado en `sin()` que deja defectos en algunas GPU móviles). Ahora lee dos veces una textura de ruido precalculada de 13 KB (`public/textures/sun_noise.webp`, generada por `scripts/textures/sun-noise.ts`); la animación sale de deslizar dos capas en sentidos opuestos.
+- **Mercurio.** Se quitó el mapa de relieve (bump): era el único cuerpo que lo usaba, sus derivadas dan defectos en GPU móviles y obligaba a otra descarga.
+- **Sin precarga masiva.** Los ocho puntos de progreso y la barra inferior ya no precargan sus páginas: al abrir una estación se pasaba de 24 peticiones en segundo plano (≈ 300 KB) a 4 (≈ 55 KB), que ya no compiten con el modelo 3D. La parada siguiente sí se precarga.
+- **El modelo deja de dibujarse fuera de pantalla** (al deslizar hacia el contenido) y se descarga apenas carga el módulo de la estación.
+- **Resolución.** En equipos modestos el lienzo se limita a 1,25 píxeles por punto.
+- **Ventanas emergentes sin desenfoque de fondo:** desenfocar sobre el lienzo 3D animado es caro en teléfonos.
+- **WebGL 1.** three.js ya no lo admite: esos equipos reciben la vista simplificada en vez de un modelo que falla.
+
 ### Accesibilidad
 
 Contraste alto sobre fondo oscuro, botones de 44–48 px, foco visible, enlace para saltar al contenido, alternativas por teclado al giro con gestos (flechas, + y −), textos alternativos para el modelo 3D y los diagramas, y verificación automática con axe-core.

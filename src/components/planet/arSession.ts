@@ -9,11 +9,11 @@ import type { Body } from "@/data/bodies";
 import { arPlacement, quickLookScale, xr, type XRSessionLike } from "./ar";
 import { bakeSunTexture, createCoronaMaterial, createSunArMaterial } from "./sunMaterial";
 
-function loadTexture(url: string, color = true): Promise<THREE.Texture | null> {
+function loadTexture(url: string): Promise<THREE.Texture | null> {
   return new THREE.TextureLoader()
     .loadAsync(url)
     .then((t) => {
-      if (color) t.colorSpace = THREE.SRGBColorSpace;
+      t.colorSpace = THREE.SRGBColorSpace;
       t.anisotropy = 4;
       return t;
     })
@@ -47,10 +47,7 @@ async function buildModel(
   const r = body.render;
   // De cerca y en grande (Júpiter mide casi 2 m) conviene la textura de más resolución.
   const texUrl = r.cloudCover ?? (radius > 0.25 ? r.texture?.high : r.texture?.low);
-  const [map, bump] = await Promise.all([
-    !isSun && texUrl ? loadTexture(texUrl) : null,
-    !isSun && r.bump && !r.cloudCover ? loadTexture(r.bump, false) : null,
-  ]);
+  const map = !isSun && texUrl ? await loadTexture(texUrl) : null;
 
   let material: THREE.Material;
   if (isSun && mode === "vivo") {
@@ -70,8 +67,6 @@ async function buildModel(
   } else {
     material = new THREE.MeshStandardMaterial({
       map,
-      bumpMap: bump,
-      bumpScale: bump ? 2.2 : 0,
       color: map ? "#ffffff" : body.color,
       roughness: 0.95,
       metalness: 0,
@@ -246,7 +241,6 @@ export async function startWebXR(body: Body, overlay: HTMLElement): Promise<() =
       const mat = m.material as THREE.Material | THREE.Material[] | undefined;
       (Array.isArray(mat) ? mat : mat ? [mat] : []).forEach((x) => {
         (x as THREE.MeshStandardMaterial).map?.dispose();
-        (x as THREE.MeshStandardMaterial).bumpMap?.dispose();
         x.dispose();
       });
     });

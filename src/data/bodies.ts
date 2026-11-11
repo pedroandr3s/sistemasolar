@@ -313,7 +313,6 @@ export const BODIES: Record<BodyId, Body> = {
     ],
     render: {
       texture: { low: "/textures/mercury_1k.webp", high: "/textures/mercury_2k.webp" },
-      bump: "/textures/mercury_bump_1k.webp",
       polarRatio: 1,
       spinSeconds: 70,
       retrograde: false,

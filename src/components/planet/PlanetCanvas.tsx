@@ -7,7 +7,7 @@ import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { BODIES, type Body, type SurfaceLabel } from "@/data/bodies";
 import { subsolarPoint } from "@/lib/astro";
-import { createGlowTexture, createSunMaterial } from "./sunMaterial";
+import { createGlowTexture, createSunMaterial, loadSunNoise } from "./sunMaterial";
 import {
   Anchor,
   LabelLayer,
@@ -99,6 +99,16 @@ function SunModel({ reducedMotion, spin }: { reducedMotion: boolean; spin: boole
   const material = useMemo(() => createSunMaterial(), []);
   const glow = useMemo(() => createGlowTexture(), []);
   const mesh = useRef<THREE.Mesh>(null);
+  const invalidate = useThree((st) => st.invalidate);
+  useEffect(
+    () =>
+      loadSunNoise((texture) => {
+        material.uniforms.uNoise!.value = texture;
+        material.uniforms.uReady!.value = 1;
+        invalidate();
+      }),
+    [material, invalidate],
+  );
   useEffect(
     () => () => {
       material.dispose();
@@ -113,7 +123,7 @@ function SunModel({ reducedMotion, spin }: { reducedMotion: boolean; spin: boole
   return (
     <group rotation-z={-BODIES.sol.obliquityDeg * DEG}>
       <mesh ref={mesh} material={material}>
-        <sphereGeometry args={[1, 96, 64]} />
+        <sphereGeometry args={[1, 64, 48]} />
       </mesh>
       <sprite scale={[3.4, 3.4, 1]}>
         <spriteMaterial map={glow} blending={THREE.AdditiveBlending} depthWrite={false} transparent />
@@ -160,7 +170,6 @@ function PlanetModel({
   const requests = useMemo(() => {
     const list: TextureRequest[] = [];
     if (r.texture) list.push({ url: quality === "alta" ? r.texture.high : r.texture.low, color: true });
-    if (r.bump) list.push({ url: r.bump, color: false });
     if (r.clouds) list.push({ url: r.clouds.texture, color: true });
     if (r.cloudCover) list.push({ url: r.cloudCover, color: true });
     if (r.rings) list.push({ url: r.rings.texture, color: true });
@@ -172,7 +181,6 @@ function PlanetModel({
 
   let idx = 0;
   const mapTex = r.texture ? (textures[idx++] ?? null) : null;
-  const bumpTex = r.bump ? (textures[idx++] ?? null) : null;
   const cloudTex = r.clouds ? (textures[idx++] ?? null) : null;
   const coverTex = r.cloudCover ? (textures[idx++] ?? null) : null;
   const ringTex = r.rings ? (textures[idx++] ?? null) : null;
@@ -251,12 +259,10 @@ function PlanetModel({
       <group ref={orientRef} {...(earthQuat ? { quaternion: earthQuat } : { "rotation-z": -tiltDeg * DEG })}>
         <group ref={spinRef}>
           <mesh scale={[1, polar, 1]}>
-            <sphereGeometry args={[1, 96, 64]} />
+            <sphereGeometry args={[1, 72, 48]} />
             <meshStandardMaterial
               key={mapTex ? "tex" : "plain"}
               map={mapTex}
-              bumpMap={bumpTex}
-              bumpScale={bumpTex ? 2.2 : 0}
               color={mapTex ? "#ffffff" : fallbackColor}
               roughness={0.95}
               metalness={0}
@@ -761,17 +767,32 @@ function labelSpecs(body: Body): LabelSpec[] {
   return list;
 }
 
+/** ¿El modelo está en pantalla? Al deslizar la página hacia abajo deja de dibujarse. */
+function useOnScreen(ref: RefObject<HTMLElement | null>): boolean {
+  const [onScreen, setOnScreen] = useState(true);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setOnScreen(entry?.isIntersecting ?? true), { threshold: 0.02 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref]);
+  return onScreen;
+}
+
 export default function PlanetCanvas(props: PlanetCanvasProps) {
   const controls = useRef<OrbitControlsImpl | null>(null);
   const registry = useRef<LabelRegistry>(createLabelRegistry());
-  const visible = usePageVisible();
+  const holder = useRef<HTMLDivElement | null>(null);
+  const onScreen = useOnScreen(holder);
+  const visible = usePageVisible() && onScreen;
   const { body, autoRotate, reducedMotion, quality } = props;
   const animating = (autoRotate && !reducedMotion) || (body.id === "sol" && !reducedMotion);
   const extent = sceneExtent(body);
   const labels = useMemo(() => labelSpecs(body), [body]);
 
   return (
-    <div style={{ position: "absolute", inset: 0 }}>
+    <div ref={holder} style={{ position: "absolute", inset: 0 }}>
       <Canvas
         dpr={[1, maxDpr(quality)]}
         frameloop={!visible ? "never" : animating ? "always" : "demand"}

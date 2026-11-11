@@ -12,7 +12,12 @@ import type { EarthNow } from "./PlanetCanvas";
 import type { TextureStatus } from "./useTextures";
 import { ArButton } from "./ArButton";
 
-const PlanetCanvas = dynamic(() => import("./PlanetCanvas"), {
+// El modelo 3D (three.js) es lo más pesado de la página: se empieza a descargar apenas
+// carga este módulo, sin esperar a que React termine de montar la estación.
+const loadCanvas = () => import("./PlanetCanvas");
+if (typeof window !== "undefined") void loadCanvas();
+
+const PlanetCanvas = dynamic(loadCanvas, {
   ssr: false,
   loading: () => <StageStatus>Preparando el modelo 3D…</StageStatus>,
 });

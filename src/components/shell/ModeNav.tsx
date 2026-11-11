@@ -46,7 +46,7 @@ export function ModeNav({ stationId }: { stationId?: string }) {
           const active = stationId ? pathname === href : m.key !== "planeta" && pathname === m.global;
           return (
             <li key={m.key}>
-              <Link href={href} aria-current={active ? "page" : undefined}>
+              <Link href={href} prefetch={false} aria-current={active ? "page" : undefined}>
                 <Icon name={m.icon} size={24} />
                 <span>{m.label}</span>
               </Link>

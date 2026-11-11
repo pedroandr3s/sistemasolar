@@ -32,7 +32,7 @@ function probeQuality(): Quality {
 
 export function maxDpr(quality: Quality): number {
   const dpr = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
-  return Math.min(dpr, quality === "alta" ? 2 : 1.5);
+  return Math.min(dpr, quality === "alta" ? 2 : 1.25);
 }
 
 export type WebGLSupport = "webgl2" | "webgl1" | "ninguno";
@@ -42,7 +42,10 @@ let webglCache: WebGLSupport | null = null;
 /** Detecta WebGL una sola vez por sesión (crear contextos es costoso). */
 export function detectWebGL(): WebGLSupport {
   if (webglCache) return webglCache;
-  webglCache = probeWebGL();
+  // three.js ya no funciona con WebGL 1: un equipo que solo tenga esa versión recibe
+  // la vista simplificada, en vez de un modelo que falla al iniciarse.
+  const found = probeWebGL();
+  webglCache = found === "webgl1" ? "ninguno" : found;
   return webglCache;
 }
 

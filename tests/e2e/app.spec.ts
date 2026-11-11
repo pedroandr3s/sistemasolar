@@ -26,8 +26,7 @@ test.describe("inicio y estaciones", () => {
     await expect(page.getByRole("link", { name: /Empezar por el Sol/ })).toHaveAttribute("href", "/estacion/sol");
     // El camino a escala va plegado: al abrirlo aparecen las ocho paradas.
     await page.locator("summary", { hasText: "Ver el camino completo" }).click();
-    for (const s of STATIONS)
-      await expect(page.locator(".road-item", { hasText: s.name }).first()).toBeVisible();
+    for (const s of STATIONS) await expect(page.locator(".road-item", { hasText: s.name }).first()).toBeVisible();
     expect(errors).toEqual([]);
   });
 
@@ -129,6 +128,19 @@ test.describe("visualización 3D", () => {
 });
 
 test.describe("orientación", () => {
+  test("la señal «Siguiente» de Dónde voy lleva a la parada siguiente", async ({ page }) => {
+    await page.goto("/estacion/sol/orientarme");
+    const next = page.getByRole("link", { name: /Siguiente: Mercurio/ });
+    await expect(next).toHaveAttribute("href", "/estacion/mercurio");
+    await next.click();
+    await expect(page).toHaveURL(/\/estacion\/mercurio$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mercurio");
+    // Hacia San Carlos, desde Venus, la siguiente es Mercurio.
+    await page.goto("/estacion/venus/orientarme");
+    await page.getByRole("radio", { name: "Hacia San Carlos" }).click();
+    await expect(page.getByRole("link", { name: /Siguiente: Mercurio/ })).toHaveAttribute("href", "/estacion/mercurio");
+  });
+
   test("funciona sin permiso de ubicación", async ({ page, context }) => {
     await context.clearPermissions();
     const errors = collectErrors(page);
@@ -554,9 +566,7 @@ test.describe("experiencia para niños: una acción principal por pantalla", () 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Saturno");
   });
 
-  test("nunca hay callejón sin salida: desde cada pantalla se vuelve a la portada o a la parada", async ({
-    page,
-  }) => {
+  test("nunca hay callejón sin salida: desde cada pantalla se vuelve a la portada o a la parada", async ({ page }) => {
     for (const path of ["/estacion/venus/sistema-solar", "/estacion/venus/mapa", "/bitacora", "/fuentes", "/qr"]) {
       await page.goto(path);
       await expect(page.getByRole("link", { name: "Sistema solar a escala" })).toHaveAttribute("href", "/");
@@ -583,9 +593,7 @@ test.describe("invitación a la realidad aumentada al abrir el enlace de una est
     });
   });
 
-  test("aparece con el botón de AR y una X; al cerrarla no vuelve al pasar al planeta siguiente", async ({
-    page,
-  }) => {
+  test("aparece con el botón de AR y una X; al cerrarla no vuelve al pasar al planeta siguiente", async ({ page }) => {
     await page.goto("/estacion/sol");
     const dialog = page.getByRole("dialog", { name: /Quieres ver el Sol aquí/ });
     await expect(dialog).toBeVisible();
@@ -613,6 +621,35 @@ test.describe("invitación a la realidad aumentada al abrir el enlace de una est
     await expect(dialog.getByRole("alert")).toContainText("No se pudo abrir");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
+  });
+});
+
+test.describe("rendimiento de la estación", () => {
+  test("al abrir una estación no se precargan todas las demás páginas", async ({ page }) => {
+    const prefetched: string[] = [];
+    page.on("request", (r) => {
+      if (r.url().includes("_rsc=")) prefetched.push(new URL(r.url()).pathname);
+    });
+    await page.goto("/estacion/sol", { waitUntil: "networkidle" });
+    await page.waitForTimeout(1500);
+    // Solo la parada siguiente (y, como mucho, la portada): antes eran más de veinte peticiones.
+    expect(prefetched.length, prefetched.join(", ")).toBeLessThanOrEqual(8);
+    expect(prefetched.some((p) => p.startsWith("/estacion/mercurio"))).toBe(true);
+  });
+
+  test("el Sol usa su textura de ruido y Mercurio ya no descarga el mapa de relieve", async ({ page }) => {
+    const images: string[] = [];
+    page.on("request", (r) => {
+      if (r.url().includes("/textures/")) images.push(new URL(r.url()).pathname);
+    });
+    await page.goto("/estacion/sol", { waitUntil: "networkidle" });
+    await expect(page.locator(".stage canvas")).toBeVisible({ timeout: 20_000 });
+    expect(images).toContain("/textures/sun_noise.webp");
+    images.length = 0;
+    await page.goto("/estacion/mercurio", { waitUntil: "networkidle" });
+    await expect(page.getByText("Cargando la superficie…")).toHaveCount(0, { timeout: 20_000 });
+    expect(images.some((i) => i.includes("bump"))).toBe(false);
+    expect(images.some((i) => i.includes("mercury"))).toBe(true);
   });
 });
 

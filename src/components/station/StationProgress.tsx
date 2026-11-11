@@ -26,6 +26,8 @@ export function StationProgress({ currentId }: { currentId: string }) {
             <li key={s.id}>
               <Link
                 href={stationPath(s.id)}
+                // Sin precarga: ocho páginas de golpe compiten con la descarga del modelo 3D.
+                prefetch={false}
                 className="stops__stop"
                 aria-current={current ? "step" : undefined}
                 aria-label={`Parada ${s.order + 1}: ${s.name}${current ? " (estás aquí)" : visited ? " (ya la abriste)" : ""}`}
