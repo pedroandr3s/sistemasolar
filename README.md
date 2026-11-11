@@ -123,6 +123,7 @@ La app es estática salvo por las cabeceras HTTP; funciona en cualquier servicio
 - [docs/INFORME.md](docs/INFORME.md): informe de lo implementado y verificado.
 - [docs/RESPUESTA-AUDITORIA.md](docs/RESPUESTA-AUDITORIA.md): estado de cada hallazgo de [AUDITORIA_PROYECTO.md](AUDITORIA_PROYECTO.md).
 - [docs/PRUEBAS-EN-CELULAR.md](docs/PRUEBAS-EN-CELULAR.md): probar en Android y iPhone.
+- [docs/PRUEBAS-CON-USUARIOS.md](docs/PRUEBAS-CON-USUARIOS.md): guion de cinco tareas para probar con niños.
 - [docs/QR.md](docs/QR.md): códigos QR de desarrollo y de producción.
 - [docs/DECISIONES.md](docs/DECISIONES.md): arquitectura y decisiones técnicas.
 - [docs/FUENTES-Y-LICENCIAS.md](docs/FUENTES-Y-LICENCIAS.md): fuentes científicas, datos geográficos, texturas y licencias.

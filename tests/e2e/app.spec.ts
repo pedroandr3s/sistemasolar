@@ -1,4 +1,4 @@
-import { test, expect, type Page, type ConsoleMessage } from "@playwright/test";
+import { test, expect, type Locator, type Page, type ConsoleMessage } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { getPlacements } from "../../src/lib/stations";
 
@@ -22,9 +22,12 @@ test.describe("inicio y estaciones", () => {
     const errors = collectErrors(page);
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("sistema solar");
+    await expect(page.getByRole("button", { name: "Escanear QR" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Empezar por el Sol/ })).toHaveAttribute("href", "/estacion/sol");
+    // El camino a escala va plegado: al abrirlo aparecen las ocho paradas.
+    await page.locator("summary", { hasText: "Ver el camino completo" }).click();
     for (const s of STATIONS)
-      await expect(page.getByRole("link", { name: new RegExp(`^${s.name}`) }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /Empezar en el Sol/ })).toHaveAttribute("href", "/estacion/sol");
+      await expect(page.locator(".road-item", { hasText: s.name }).first()).toBeVisible();
     expect(errors).toEqual([]);
   });
 
@@ -39,12 +42,17 @@ test.describe("inicio y estaciones", () => {
       await expect(page.getByText("Cargando la superficie…")).toHaveCount(0, { timeout: 20_000 });
       const next = STATIONS[i + 1];
       if (next) {
-        await expect(page.getByRole("link", { name: new RegExp(`Siguiente: ${next.name}`) })).toHaveAttribute(
+        const label = i === 0 ? `Ir a ${next.name}` : `Siguiente: ${next.name}`;
+        await expect(page.getByRole("link", { name: new RegExp(label) })).toHaveAttribute(
           "href",
           `/estacion/${next.id}`,
         );
       } else {
         await expect(page.getByText("Llegaste a la última estación del recorrido.")).toBeVisible();
+        await expect(page.getByRole("link", { name: /¡Terminaste! Ver mi viaje/ })).toHaveAttribute(
+          "href",
+          "/bitacora",
+        );
       }
       expect(errors).toEqual([]);
     });
@@ -58,16 +66,15 @@ test.describe("inicio y estaciones", () => {
 });
 
 test.describe("navegación entre modos", () => {
-  test("los cinco modos conservan la estación del QR", async ({ page }) => {
+  test("los cuatro modos conservan la estación del QR", async ({ page }) => {
     const errors = collectErrors(page);
     await page.goto("/estacion/tierra");
     const nav = page.getByRole("navigation", { name: "Modos de la experiencia" });
     const expected: [string, string, RegExp][] = [
-      ["Orientarme", "/estacion/tierra/orientarme", /Orientarme/],
-      ["Sistema solar", "/estacion/tierra/sistema-solar", /Dónde están los planetas/],
+      ["Dónde voy", "/estacion/tierra/orientarme", /Orientarme/],
       ["Mapa", "/estacion/tierra/mapa", /Mapa del recorrido/],
       ["Aprender", "/estacion/tierra/aprender", /Aprender/],
-      ["Explorar", "/estacion/tierra", /^Tierra$/],
+      ["Planeta", "/estacion/tierra", /^Tierra$/],
     ];
     for (const [label, href, heading] of expected) {
       await nav.getByRole("link", { name: label }).click();
@@ -75,6 +82,11 @@ test.describe("navegación entre modos", () => {
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
       await expect(nav.getByRole("link", { name: label })).toHaveAttribute("aria-current", "page");
     }
+    // «Los planetas hoy» salió de la barra, pero sigue a un toque desde Aprender.
+    await nav.getByRole("link", { name: "Aprender" }).click();
+    await page.getByRole("link", { name: "Abrir la simulación de órbitas" }).click();
+    await expect(page).toHaveURL(/\/estacion\/tierra\/sistema-solar$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Dónde están los planetas/);
     expect(errors).toEqual([]);
   });
 });
@@ -83,15 +95,15 @@ test.describe("visualización 3D", () => {
   test("los controles del modelo responden", async ({ page }) => {
     await page.goto("/estacion/saturno");
     await expect(page.locator(".stage canvas")).toBeVisible({ timeout: 20_000 });
-    await page.getByRole("button", { name: "Etiquetas" }).click();
+    await page.getByRole("button", { name: "Nombres" }).click();
     await expect(page.locator(".planet-label", { hasText: "División de Cassini" })).toHaveCSS("opacity", "1", {
       timeout: 10_000,
     });
     await page.getByRole("button", { name: "Pausar giro" }).click();
     await expect(page.getByRole("button", { name: "Girar" })).toHaveAttribute("aria-pressed", "false");
     await page.getByRole("button", { name: "Acercar" }).click();
-    await page.getByRole("button", { name: "Restablecer la vista" }).click();
-    await page.getByRole("button", { name: "Vista ampliada" }).click();
+    await page.getByRole("button", { name: "Reiniciar" }).click();
+    await page.getByRole("button", { name: /Agrandar/ }).click();
     await expect(page.locator(".stage--expanded")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.locator(".stage--expanded")).toHaveCount(0);
@@ -187,8 +199,9 @@ test.describe("aprender y progreso", () => {
     await page.getByLabel("Segundo").first().selectOption("sol");
     await expect(page.getByText(/Sol es/)).toBeVisible();
     await page.goto("/estacion/marte");
+    await page.locator("summary", { hasText: "Desafío" }).click();
     await page.getByRole("button", { name: "Óxido de hierro" }).click();
-    await expect(page.getByText(/Correcto\./)).toBeVisible();
+    await expect(page.getByText(/¡Muy bien!/)).toBeVisible();
   });
 
   test("la estación final muestra el viaje de la luz hasta Urano", async ({ page }) => {
@@ -206,7 +219,7 @@ test.describe("aprender y progreso", () => {
       await page.waitForTimeout(500);
     }
     await page.goto("/bitacora");
-    await expect(page.getByText("Abriste 2 de 8 estaciones.", { exact: false })).toBeVisible();
+    await expect(page.getByText("Llevas 2 de 8 sellos", { exact: false })).toBeVisible();
   });
 });
 
@@ -286,7 +299,7 @@ test.describe("criterios de la auditoría (AUDITORIA_PROYECTO.md)", () => {
     }
   });
 
-  test("C-03: objetivos táctiles de 44 px (24 px en enlaces dentro de una frase)", async ({ page, context }, info) => {
+  test("C-03: objetivos táctiles de 48 px (24 px en enlaces dentro de una frase)", async ({ page, context }, info) => {
     test.skip(info.project.name === "escritorio", "medición para teléfonos");
     await context.addInitScript(() => {
       try {
@@ -316,7 +329,7 @@ test.describe("criterios de la auditoría (AUDITORIA_PROYECTO.md)", () => {
             if (el.classList.contains("skip-link") || el.closest(".leaflet-control-attribution, .leaflet-marker-icon"))
               return false;
             const inSentence = el.classList.contains("text-link") && !el.classList.contains("text-link--block");
-            return inSentence ? Math.min(r.width, r.height) < 24 : r.height < 40 || r.width < 24;
+            return inSentence ? Math.min(r.width, r.height) < 24 : r.height < 48 || r.width < 24;
           })
           .map(
             (el) =>
@@ -383,6 +396,223 @@ test.describe("criterios de la auditoría (AUDITORIA_PROYECTO.md)", () => {
     await page.goto("/estacion/saturno");
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", /^Saturno/);
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /opengraph-image/);
+  });
+});
+
+test.describe("QR de realidad aumentada (?ar=1)", () => {
+  test("sin realidad aumentada en el equipo, lo explica y deja ver el modelo 3D", async ({ page }) => {
+    await page.goto("/estacion/sol?ar=1");
+    const note = page.getByText("Este teléfono no puede abrir la realidad aumentada");
+    await expect(note).toBeVisible();
+    await page.getByRole("button", { name: "Ver el modelo 3D" }).click();
+    await expect(note).toBeHidden();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sol");
+  });
+
+  test("sin el parámetro, la estación se abre como siempre", async ({ page }) => {
+    await page.goto("/estacion/sol");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sol");
+    await expect(page.getByText("Este teléfono no puede abrir la realidad aumentada")).toHaveCount(0);
+  });
+});
+
+test.describe("experiencia para niños: una acción principal por pantalla", () => {
+  test.use({ viewport: { width: 360, height: 640 } });
+
+  /** ¿El elemento está completo dentro de la pantalla, sin deslizar? */
+  async function inView(page: Page, locator: Locator) {
+    const box = (await locator.boundingBox())!;
+    const { width, height } = page.viewportSize()!;
+    expect(box.y, "borde superior").toBeGreaterThanOrEqual(0);
+    expect(box.x, "borde izquierdo").toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width, "borde derecho").toBeLessThanOrEqual(width + 0.5);
+    expect(box.y + box.height, "borde inferior").toBeLessThanOrEqual(height + 0.5);
+    return box;
+  }
+
+  test("portada: «Escanear QR» y «Empezar por el Sol» se ven sin deslizar en 360×640", async ({ page }) => {
+    await page.goto("/");
+    const scan = await inView(page, page.getByRole("button", { name: "Escanear QR" }));
+    const start = await inView(page, page.getByRole("link", { name: "Empezar por el Sol" }));
+    expect(scan.height).toBeGreaterThanOrEqual(56);
+    expect(start.height).toBeGreaterThanOrEqual(56);
+    expect(start.y).toBeGreaterThan(scan.y); // el escáner va primero
+    const nav = (await page.getByRole("navigation", { name: "Modos de la experiencia" }).boundingBox())!;
+    expect(start.y + start.height).toBeLessThanOrEqual(nav.y); // la barra no los tapa
+  });
+
+  for (const [id, name, label] of [
+    ["sol", "Sol", /Ir a Mercurio/],
+    ["saturno", "Saturno", /Siguiente: Urano/],
+    ["urano", "Urano", /¡Terminaste! Ver mi viaje/],
+  ] as const) {
+    test(`estación ${name}: planeta, botón de AR y «Siguiente» a la vista sin deslizar en 360×640`, async ({
+      page,
+    }) => {
+      await page.goto(`/estacion/${id}`);
+      await expect(page.locator(".stage canvas")).toBeVisible({ timeout: 20_000 });
+      const title = await inView(page, page.getByRole("heading", { level: 1 }));
+      const stage = await inView(page, page.locator(".stage"));
+      const ar = await inView(page, page.getByRole("button", { name: "Ver en realidad aumentada" }));
+      const next = await inView(page, page.getByRole("link", { name: label }));
+      const nav = (await page.getByRole("navigation", { name: "Modos de la experiencia" }).boundingBox())!;
+      // Orden: nombre, planeta, realidad aumentada, siguiente, barra.
+      expect(stage.y).toBeGreaterThanOrEqual(title.y);
+      expect(ar.y).toBeGreaterThanOrEqual(stage.y + stage.height - 1);
+      expect(next.y).toBeGreaterThanOrEqual(ar.y + ar.height);
+      expect(nav.y).toBeGreaterThanOrEqual(next.y + next.height);
+      expect(stage.height).toBeGreaterThanOrEqual(200);
+      expect(ar.height).toBeGreaterThanOrEqual(56);
+      expect(ar.width).toBeGreaterThanOrEqual(280);
+      expect(next.height).toBeGreaterThanOrEqual(56);
+      // La distancia va en lenguaje simple.
+      if (id !== "urano") await expect(page.getByRole("link", { name: label })).toContainText(/a .+ de aquí/);
+    });
+  }
+
+  test("el progreso muestra las ocho paradas, la actual resaltada, y se pueden tocar", async ({ page }) => {
+    await page.goto("/estacion/tierra");
+    const stops = page.getByRole("navigation", { name: "Paradas del recorrido" });
+    await expect(stops.getByRole("link")).toHaveCount(8);
+    await expect(stops.locator('[aria-current="step"]')).toHaveAccessibleName(/Tierra \(estás aquí\)/);
+    await expect(page.getByText("Parada 4 de 8")).toBeVisible();
+    for (const link of await stops.getByRole("link").all()) {
+      const box = (await link.boundingBox())!;
+      expect(box.height).toBeGreaterThanOrEqual(48);
+      expect(box.width).toBeGreaterThanOrEqual(40); // ocho paradas en 360 px: 48 de alto, el ancho que cabe
+    }
+    await stops.getByRole("link", { name: /Parada 5: Marte/ }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Marte");
+  });
+
+  test("a la vista solo hay nombre, frase corta y tres datos; lo demás se abre con un botón", async ({ page }) => {
+    await page.goto("/estacion/jupiter");
+    await expect(page.getByRole("list", { name: "Tres datos de Júpiter" }).getByRole("listitem")).toHaveCount(3);
+    await expect(page.getByText("115 lunas", { exact: true })).toBeVisible();
+    const hook = (await page.locator(".station-head .lead").innerText()).trim();
+    expect(hook.split(/\s+/).length).toBeLessThanOrEqual(12);
+    await expect(page.getByRole("tab", { name: "Descubrir" })).toBeHidden();
+    await page.locator("summary", { hasText: "Quiero saber más" }).click();
+    await expect(page.getByRole("tab", { name: "Descubrir" })).toBeVisible();
+    await expect(page.getByText(/Las posiciones son teóricas/)).toBeVisible();
+  });
+
+  test("desafío: una pregunta por vez, con respuesta inmediata y amable", async ({ page }) => {
+    await page.goto("/estacion/tierra");
+    await page.locator("summary", { hasText: "Desafío" }).click();
+    await expect(page.locator(".quiz fieldset")).toHaveCount(1);
+    for (const option of await page.locator(".quiz-option").all())
+      expect((await option.boundingBox())!.height).toBeGreaterThanOrEqual(56);
+    await page.locator(".quiz-option").nth(2).click(); // «Las nubes»: incorrecta
+    await expect(page.locator(".quiz__feedback")).toContainText("Casi.");
+    await page.getByRole("button", { name: "Siguiente pregunta" }).click();
+    await expect(page.locator(".quiz fieldset")).toHaveCount(1);
+    await page.locator(".quiz-option").first().click();
+    await page.getByRole("button", { name: "Siguiente pregunta" }).click();
+    await page.locator(".quiz-option").first().click();
+    await page.getByRole("button", { name: "Ver cómo me fue" }).click();
+    await expect(page.getByRole("button", { name: "Intentar de nuevo" })).toBeVisible();
+  });
+
+  test("los controles del modelo llevan texto y la pista de giro se va al primer toque", async ({ page }) => {
+    await page.goto("/estacion/marte");
+    await expect(page.locator(".stage canvas")).toBeVisible({ timeout: 20_000 });
+    for (const name of ["Acercar", "Alejar", "Reiniciar", "Agrandar"]) {
+      const tool = page.locator(".stage__tools button", { hasText: name });
+      await expect(tool).toBeVisible();
+      const box = (await tool.boundingBox())!;
+      expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(48);
+    }
+    await expect(page.getByText("Gira con el dedo")).toBeVisible();
+    await page.locator(".stage canvas").click({ position: { x: 60, y: 60 } });
+    await expect(page.getByText("Gira con el dedo")).toHaveCount(0);
+  });
+
+  test("todos los botones de acción llevan texto, no solo un ícono", async ({ page }) => {
+    for (const path of ["/", "/estacion/saturno", "/estacion/tierra/sistema-solar", "/bitacora"]) {
+      await page.goto(path);
+      await page.waitForTimeout(1200);
+      const iconOnly = await page.evaluate(() =>
+        Array.from(document.querySelectorAll<HTMLElement>("main button, main a.btn, main a.chip"))
+          .filter((el) => el.getBoundingClientRect().width > 0 && !el.closest(".leaflet-container"))
+          .filter((el) => (el.textContent ?? "").trim().length === 0)
+          .map((el) => el.getAttribute("aria-label") ?? el.outerHTML.slice(0, 60)),
+      );
+      expect(iconOnly, `botones sin texto en ${path}`).toEqual([]);
+    }
+  });
+
+  test("escáner de QR: se abre, ofrece elegir la parada y se cierra con la X", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Escanear QR" }).click();
+    const dialog = page.getByRole("dialog", { name: "Apunta al código de la escultura" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Cerrar" }).click();
+    await expect(dialog).toBeHidden();
+    await page.getByRole("button", { name: "Escanear QR" }).click();
+    await dialog.getByRole("link", { name: "Saturno" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Saturno");
+  });
+
+  test("nunca hay callejón sin salida: desde cada pantalla se vuelve a la portada o a la parada", async ({
+    page,
+  }) => {
+    for (const path of ["/estacion/venus/sistema-solar", "/estacion/venus/mapa", "/bitacora", "/fuentes", "/qr"]) {
+      await page.goto(path);
+      await expect(page.getByRole("link", { name: "Sistema solar a escala" })).toHaveAttribute("href", "/");
+      await expect(
+        page.getByRole("navigation", { name: "Modos de la experiencia" }).getByRole("link", { name: "Planeta" }),
+      ).toBeVisible();
+    }
+  });
+});
+
+test.describe("invitación a la realidad aumentada al abrir el enlace de una estación", () => {
+  // El navegador de pruebas no tiene realidad aumentada: se simula que sí la admite.
+  test.beforeEach(async ({ context }) => {
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, "xr", {
+        configurable: true,
+        value: {
+          isSessionSupported: async () => true,
+          requestSession: async () => {
+            throw new Error("sin cámara en la prueba");
+          },
+        },
+      });
+    });
+  });
+
+  test("aparece con el botón de AR y una X; al cerrarla no vuelve al pasar al planeta siguiente", async ({
+    page,
+  }) => {
+    await page.goto("/estacion/sol");
+    const dialog = page.getByRole("dialog", { name: /Quieres ver el Sol aquí/ });
+    await expect(dialog).toBeVisible();
+    const ar = dialog.getByRole("button", { name: "Ver en realidad aumentada" });
+    await expect(ar).toBeVisible();
+    expect((await ar.boundingBox())!.height).toBeGreaterThanOrEqual(56);
+    const close = dialog.getByRole("button", { name: "Cerrar" });
+    expect(Math.min((await close.boundingBox())!.width, (await close.boundingBox())!.height)).toBeGreaterThanOrEqual(
+      48,
+    );
+    await close.click();
+    await expect(dialog).toBeHidden();
+    await page.getByRole("link", { name: /Ir a Mercurio/ }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mercurio");
+    await page.waitForTimeout(600);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    // El botón grande sigue disponible para abrirla cuando se quiera.
+    await expect(page.getByRole("button", { name: "Ver en realidad aumentada" })).toBeVisible();
+  });
+
+  test("si la cámara no abre, lo dice sin jerga y deja reintentar", async ({ page }) => {
+    await page.goto("/estacion/tierra?ar=1");
+    const dialog = page.getByRole("dialog");
+    await dialog.getByRole("button", { name: "Ver en realidad aumentada" }).click();
+    await expect(dialog.getByRole("alert")).toContainText("No se pudo abrir");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
   });
 });
 

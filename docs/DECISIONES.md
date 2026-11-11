@@ -101,6 +101,22 @@ Opcional y solo donde existe: WebXR `immersive-ar` en Android (Chrome con ARCore
 
 Probado en Android por el autor del proyecto (anclaje); el material nuevo del Sol y los tamaños a escala se verificaron con capturas y pruebas unitarias, no en un dispositivo. AR Quick Look sigue sin probarse en un iPhone.
 
+### Experiencia para niños: una acción principal por pantalla
+
+Probando con personas se vio que había botones que no se notaban, demasiada información junta y que no era obvio cómo pasar al planeta siguiente. La meta es que un niño de 10 años entienda cada pantalla en menos de 5 segundos. Guion para repetir la prueba: [PRUEBAS-CON-USUARIOS.md](PRUEBAS-CON-USUARIOS.md).
+
+- **Portada.** El protagonista es «Escanear QR» (dorado); debajo, «Empezar por el Sol» (contorno). Ambos se ven sin deslizar en 360×640. El camino a escala va plegado y los demás accesos, debajo.
+- **Escáner de QR** (`QrScanner.tsx`). Pide la cámara solo al pulsarlo, analiza la imagen en el teléfono (BarcodeDetector o jsQR, que se descarga recién entonces) y solo acepta paradas de este recorrido, reconstruyendo la ruta interna (`stationPathFromQr`): un código ajeno no saca a nadie del sitio. Si la cámara falla, deja elegir la parada de una lista.
+- **Estación, sin deslizar en un teléfono chico:** nombre, planeta 3D con la pista «Gira con el dedo» (se va al primer toque), «Ver en realidad aumentada» (dorado, a todo el ancho) y, fijo sobre la barra, «Siguiente: <planeta>» con la distancia («a 770 m de aquí por el camino»). En el Sol dice «Ir a Mercurio»; en Urano, «¡Terminaste! Ver mi viaje».
+- **Color con significado.** Dorado: la acción principal de la pantalla. Señal verde de carretera: hacia dónde seguir. Contorno: acciones secundarias. Todos los botones llevan ícono y texto.
+- **Progreso.** Ocho puntos del color de cada astro («Parada 3 de 8»), el actual resaltado, los ya abiertos rellenos, todos tocables. En 360 px miden 52 px de alto y unos 43 de ancho: ocho de 48 px no caben.
+- **Información por capas.** A la vista: nombre, frase de hasta 12 palabras y tres datos con ícono (tamaño, año y lunas; en el Sol, tamaño, temperatura y luz). Lo demás se abre con «Quiero saber más» (los tres niveles, la pregunta, la escala) y «Desafío» (una pregunta por vez). Las aclaraciones del modelo 3D van en «Sobre este modelo 3D». Las cifras salen de los mismos datos científicos y se mantiene el aviso de que las posiciones son teóricas.
+- **Barra inferior de 5 a 4 modos:** «Planeta», «Dónde voy», «Mapa» y «Aprender». La vista «Sistema solar» por fecha se confundía con el mapa y no hace falta para avanzar: conserva su dirección y se abre desde Aprender, desde «Quiero saber más» y desde la portada («Los planetas hoy»).
+- **Controles del modelo** con palabra visible («Acercar», «Alejar», «Reiniciar», «Agrandar»), en una columna al borde, fuera del planeta.
+- **Ventana de realidad aumentada al abrir el enlace.** Al entrar a una estación por su enlace o su QR en un teléfono con AR, una ventana ofrece «Ver en realidad aumentada» y una X para cerrarla. No reaparece al pasar de un planeta a otro ni tras cerrarla en esa parada. Si el teléfono no admite AR, solo sale cuando el enlace la pedía (`?ar=1`) y lo explica.
+- **Bitácora («Mi viaje»).** Sellos por parada, un mensaje según el avance y un botón hacia la primera parada que falta.
+- **Objetivos táctiles** de 48 px o más (enlaces dentro de una frase: 24 px, excepción de WCAG 2.5.8).
+
 ### Diseño visual («Noche andina»)
 
 Pensado para teléfono y tablet, al aire libre:
@@ -109,5 +125,5 @@ Pensado para teléfono y tablet, al aire libre:
 - La estación siguiente se dibuja como una señal informativa de carretera (verde con filete blanco): es la señalética del recorrido.
 - Portada con una ilustración del Sol en San Carlos, el camino y la cordillera, con las estaciones en su fracción real del trazado.
 - Texto base de 17 px (18 px en tablet), secundarios de al menos 14 px y controles de 44 px o más.
-- Teléfono: barra inferior con el modo activo marcado. Tablet: la barra pasa a ser un muelle flotante; en horizontal, la estación muestra el modelo 3D fijo a la izquierda y el contenido a la derecha, y la portada pone el camino junto a los modos.
+- Teléfono: barra inferior de cuatro modos con el activo marcado. Tablet: la barra pasa a ser un muelle flotante; en horizontal, la estación muestra el modelo 3D fijo a la izquierda y el contenido a la derecha, y la portada pone el camino junto a los modos.
 - El mapa aísla sus capas (`isolation: isolate`) para no tapar la barra de modos.
