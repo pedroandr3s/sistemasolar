@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BODIES, BODY_ORDER } from "@/data/bodies";
 import { arPlacement, quickLookScale } from "@/components/planet/ar";
+import { stationArUrl } from "@/config/site";
 
 describe("realidad aumentada a la escala del recorrido (1 UA = 2 km)", () => {
   it("el Sol mide unos 18,6 m y la Tierra unos 17 cm", () => {
@@ -34,5 +35,12 @@ describe("realidad aumentada a la escala del recorrido (1 UA = 2 km)", () => {
   it("en AR Quick Look solo el Sol se reduce", () => {
     expect(quickLookScale(BODIES.sol)).toBe(0.1);
     for (const id of BODY_ORDER) if (id !== "sol") expect(quickLookScale(BODIES[id])).toBe(1);
+  });
+});
+
+describe("códigos QR de realidad aumentada", () => {
+  it("la dirección lleva a la estación y pide abrir la realidad aumentada", () => {
+    expect(stationArUrl("https://ejemplo.cl/", "sol")).toBe("https://ejemplo.cl/estacion/sol?ar=1");
+    expect(new URL(stationArUrl("https://ejemplo.cl", "jupiter")).searchParams.get("ar")).toBe("1");
   });
 });

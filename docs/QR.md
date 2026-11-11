@@ -35,6 +35,18 @@ Los identificadores están en `src/config/stations.ts`. **No los cambies despué
 
    El modo producción **se niega a generar** si la URL falta, no es HTTPS, apunta a localhost o a una IP local, es un túnel temporal, incluye rutas o parámetros, o parece un dominio de ejemplo.
 
+## Códigos que abren la realidad aumentada
+
+```bash
+npm run qr:ar -- --base https://sistemasolar-black.vercel.app
+```
+
+Genera `artifacts/qr/ar/qr-realidad-aumentada.pdf`: una hoja resumen con los ocho códigos y una hoja por cuerpo con el código grande, además de un PNG por cuerpo. Cada código lleva a `/estacion/<id>?ar=1`. Con ese parámetro, la estación se abre con una ventana emergente: el botón «Ver en realidad aumentada» y una X para cerrarla. La misma ventana aparece al abrir cualquier enlace de estación en un teléfono que admite realidad aumentada.
+
+No es posible encender la cámara sin ningún toque: los navegadores exigen un gesto de la persona antes de iniciar la realidad aumentada. Por eso el código deja a un toque de distancia. Si el teléfono no la admite, la página lo explica y muestra el modelo 3D.
+
+Estos códigos dependen de la dirección indicada en `--base`: si el sitio cambia de dominio hay que generarlos de nuevo.
+
 ## Archivos generados
 
 | Archivo | Uso |

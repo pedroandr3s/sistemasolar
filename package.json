@@ -15,6 +15,7 @@
     "test:e2e": "playwright test",
     "qr:dev": "tsx scripts/qr/generate.ts --modo desarrollo",
     "qr:prod": "tsx scripts/qr/generate.ts --modo produccion",
+    "qr:ar": "tsx scripts/qr/ar.ts",
     "tunel": "tsx scripts/tunnel/tunnel.ts",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build",
     "textures": "python3 scripts/textures/build_textures.py",

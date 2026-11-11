@@ -20,6 +20,18 @@ export function stationUrl(baseUrl: string, stationId: string): string {
   return `${normalizeBaseUrl(baseUrl)}${stationPath(stationId)}`;
 }
 
+/** Parámetro que abre la estación ofreciendo de inmediato la realidad aumentada. */
+export const AR_PARAM = "ar";
+
+/**
+ * Dirección de una estación que propone abrir la realidad aumentada al llegar
+ * (para códigos QR dedicados a AR). El navegador exige un toque de la persona
+ * antes de encender la cámara, así que la página muestra un botón grande.
+ */
+export function stationArUrl(baseUrl: string, stationId: string): string {
+  return `${stationUrl(baseUrl, stationId)}?${AR_PARAM}=1`;
+}
+
 export function normalizeBaseUrl(url: string): string {
   return url.trim().replace(/\/+$/, "");
 }
