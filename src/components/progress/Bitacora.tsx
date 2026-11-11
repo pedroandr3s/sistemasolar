@@ -16,16 +16,24 @@ export function Bitacora() {
   const stations = [...STATIONS].sort((a, b) => a.order - b.order);
   const visited = stations.filter((s) => progress.visits[s.id]);
   const complete = visited.length === stations.length;
+  /** La primera parada que falta: el siguiente paso sugerido. */
+  const pending = stations.find((s) => !progress.visits[s.id]);
   const lastBody = BODIES[stations[stations.length - 1]!.bodyId];
 
   return (
     <div className="wrap" style={{ paddingTop: 14 }}>
-      <h1 className="page-title">Mi bitácora</h1>
-      <p className="muted" style={{ marginTop: 6 }}>
+      <h1 className="page-title">Mi viaje</h1>
+      <p className="lead" style={{ margin: "8px 0 0" }} role="status">
         {visited.length === 0
-          ? "Todavía no abres ninguna estación. Escanea el código QR de la primera, el Sol."
-          : `Abriste ${visited.length} de ${stations.length} estaciones.`}{" "}
-        Se guarda solo en este teléfono.
+          ? "Todavía no tienes sellos. Cada parada que abras te da uno."
+          : complete
+            ? "¡Completaste el recorrido! Tienes los 8 sellos."
+            : visited.length < stations.length / 2
+              ? `¡Buen comienzo! Llevas ${visited.length} de ${stations.length} sellos.`
+              : `¡Vas por más de la mitad! Llevas ${visited.length} de ${stations.length} sellos.`}
+      </p>
+      <p className="small muted" style={{ marginTop: 4 }}>
+        Tus sellos se guardan solo en este teléfono.
       </p>
 
       <div className="log-progress" aria-hidden="true">
@@ -33,6 +41,13 @@ export function Bitacora() {
           <span key={s.id} style={progress.visits[s.id] ? { background: BODIES[s.bodyId].color } : undefined} />
         ))}
       </div>
+
+      {pending && (
+        <Link className="btn btn--primary btn--big btn--block" href={stationPath(pending.id)} style={{ marginTop: 18 }}>
+          {visited.length === 0 ? "Empezar por el Sol" : `Ir a ${pending.name}`}
+          <Icon name="arrow-right" size={24} />
+        </Link>
+      )}
 
       {complete && (
         <div className="idea" style={{ marginTop: 22 }}>
@@ -66,14 +81,14 @@ export function Bitacora() {
                 {date ? (
                   <>
                     <p className="small muted" style={{ margin: "0 0 6px" }}>
-                      Insignia obtenida el {formatChileDate(new Date(date))}
+                      Sello obtenido el {formatChileDate(new Date(date))}
                       {quiz !== undefined ? `. Quiz: ${quiz} de 3` : ""}.
                     </p>
                     <p style={{ margin: 0 }}>{body.keyIdea}</p>
                   </>
                 ) : (
                   <p className="small muted" style={{ margin: 0 }}>
-                    Aún no la abres.
+                    Te falta este sello.
                   </p>
                 )}
               </div>
@@ -95,7 +110,7 @@ export function Bitacora() {
         </button>
       )}
       <p className="small muted" style={{ marginTop: 18 }}>
-        Las insignias reconocen la curiosidad, no la velocidad: no hay premio por llegar primero. Recorre con calma y
+        Los sellos reconocen la curiosidad, no la velocidad: no hay premio por llegar primero. Recorre con calma y
         detente solo en lugares seguros.
       </p>
     </div>
